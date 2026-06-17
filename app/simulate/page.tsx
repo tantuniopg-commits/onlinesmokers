@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-
+import Cigarette3D from './Cigarette3D'
+import IQOS3D from './IQOS3D'
 const devices = [
   { id: 'classic', name: 'Classic', desc: 'The original' },
   { id: 'iqos', name: 'IQOS', desc: 'Heat, not burn' },
@@ -268,7 +269,41 @@ export default function Simulate() {
   const [puffs, setPuffs] = useState(0)
   const [inhaling, setInhaling] = useState(false)
 
+  const playInhaleSound = () => {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const duration = 1.2
+
+    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate)
+    const data = noiseBuffer.getChannelData(0)
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.5
+    }
+
+    const noise = ctx.createBufferSource()
+    noise.buffer = noiseBuffer
+
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'bandpass'
+    filter.frequency.setValueAtTime(400, ctx.currentTime)
+    filter.frequency.linearRampToValueAtTime(900, ctx.currentTime + duration * 0.6)
+    filter.frequency.linearRampToValueAtTime(300, ctx.currentTime + duration)
+    filter.Q.value = 0.7
+
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + duration * 0.3)
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
+
+    noise.connect(filter)
+    filter.connect(gain)
+    gain.connect(ctx.destination)
+
+    noise.start()
+    noise.stop(ctx.currentTime + duration)
+  }
+
   const handlePuff = () => {
+    playInhaleSound()
     setInhaling(true)
     setTimeout(() => setInhaling(false), 1800)
     setPuffs(p => p + 1)
@@ -276,8 +311,8 @@ export default function Simulate() {
 
   const renderDevice = () => {
     switch (selected) {
-      case 'classic': return <ClassicCig inhaling={inhaling} />
-      case 'iqos': return <IQOSDevice inhaling={inhaling} />
+      case 'classic': return <Cigarette3D inhaling={inhaling} />
+      case 'iqos': return <IQOS3D inhaling={inhaling} />
       case 'puff': return <PuffDevice inhaling={inhaling} />
       case 'hookah': return <HookahDevice inhaling={inhaling} />
     }
