@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +12,348 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Premium cross-fade between routes (e.g. Ritual Complete -> next screen).
+   No slide, just old-screen-out / new-screen-in on the browser's default
+   root view transition. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 400ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0s !important;
+  }
+}
+
+/* IntroSplash: amber sphere breath pulse */
+.velis-sphere--pulse {
+  animation-name: velisPulse;
+  animation-duration: 800ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
+
+@keyframes velisPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velis-sphere--pulse {
+    animation: none !important;
+  }
+}
+
+/* RitualObject: slow irregular living-energy drift while alive */
+.ritual-core--alive {
+  animation: livingEnergyBlur 11s ease-in-out infinite;
+}
+.ritual-bead--alive {
+  animation: livingEnergyBead 11s ease-in-out infinite;
+}
+
+@keyframes livingEnergyBlur {
+  0% {
+    filter: blur(5px) brightness(0.97);
+  }
+  21% {
+    filter: blur(5px) brightness(1.05);
+  }
+  40% {
+    filter: blur(5px) brightness(1);
+  }
+  63% {
+    filter: blur(5px) brightness(1.1);
+  }
+  82% {
+    filter: blur(5px) brightness(0.99);
+  }
+  100% {
+    filter: blur(5px) brightness(0.97);
+  }
+}
+
+@keyframes livingEnergyBead {
+  0% {
+    filter: brightness(0.97);
+  }
+  21% {
+    filter: brightness(1.05);
+  }
+  40% {
+    filter: brightness(1);
+  }
+  63% {
+    filter: brightness(1.1);
+  }
+  82% {
+    filter: brightness(0.99);
+  }
+  100% {
+    filter: brightness(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-wrapper,
+  .ritual-halo,
+  .ritual-core,
+  .ritual-core-bloom,
+  .ritual-hold-boost,
+  .ritual-bead {
+    transition: none !important;
+  }
+  .ritual-core--alive,
+  .ritual-bead--alive {
+    animation: none !important;
+  }
+}
+
+/* Ritual Home (app/page.tsx): button hover/active states */
+.continue-btn:hover {
+  background: #f5f2ee;
+}
+.continue-btn:active {
+  background: #ddd8d1;
+}
+.start-ritual-btn:hover {
+  background: linear-gradient(180deg, #f7d9a2 0%, #e2ac60 100%);
+}
+.start-ritual-btn:active {
+  background: linear-gradient(180deg, #e2b675 0%, #c8934a 100%);
+}
+
+/* Aftercare (app/aftercare/page.tsx): continue button hover/active */
+.journey-continue-btn:hover {
+  background: rgba(255, 178, 90, 0.08);
+}
+.journey-continue-btn:active {
+  background: rgba(255, 178, 90, 0.16);
+}
+
+/* Profile (app/profile/page.tsx): settings gear button hover/active */
+.profile-settings-btn:hover {
+  color: #e3c08c;
+}
+.profile-settings-btn:active {
+  color: #f3ce8e;
+}
+
+/* Leaderboard (app/leaderboard/page.tsx): row hover/active */
+.lb-row:hover,
+.lb-row:active {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 178, 90, 0.25) !important;
+}
+
+/* BottomNav: Profile tab's slow, elegant amber pulse during Guided
+   Registration Mode (bkz. app/BottomNav.tsx ctaPulse) - static ring is
+   unaffected, this only adds a gentle looping glow on top of it. */
+.velis-nav-cta--pulse {
+  animation: navCtaPulse 3000ms ease-in-out infinite;
+}
+
+@keyframes navCtaPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px 1px rgba(255, 178, 90, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 14px 3px rgba(255, 178, 90, 0.42);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velis-nav-cta--pulse {
+    animation: none !important;
+  }
+}
+
+/* Ritual Home (app/page.tsx): calm ambient motion around the (untouched)
+   ritual object - background glow breathing, the object's own wrapper
+   floating by 1-2px, and the idle tap-hand icon gently pulsing. */
+.ritual-glow--pulse {
+  animation: ritualGlowPulse 6000ms ease-in-out infinite;
+}
+.ritual-rings--pulse {
+  animation: ritualRingsPulse 8000ms ease-in-out infinite;
+}
+.ritual-object--float {
+  animation: ritualObjectFloat 5000ms ease-in-out infinite;
+}
+.ritual-hand--pulse {
+  animation: ritualHandPulse 2200ms ease-in-out infinite;
+}
+.ritual-press-pulse {
+  animation: ritualPressPulse 220ms ease-in-out 1;
+}
+
+@keyframes ritualPressPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Amber core toplama: dokununca beliren "+N" - yukarı süzülüp kayboluyor. */
+.orb-popup-rise {
+  animation: orbPopupRise 750ms ease-out forwards;
+}
+
+@keyframes orbPopupRise {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 34px));
+  }
+}
+
+@keyframes ritualGlowPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@keyframes ritualRingsPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ritualObjectFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes ritualHandPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-glow--pulse,
+  .ritual-rings--pulse,
+  .ritual-object--float,
+  .ritual-hand--pulse,
+  .ritual-press-pulse {
+    animation: none !important;
+  }
+}
+
+/* VelisGuide (app/guide/VelisGuide.tsx): calm idle breathing + a very
+   small float - never bouncy, never cartoon-like. */
+.guide-breathe {
+  animation: guideBreathe 3000ms ease-in-out infinite;
+}
+.guide-float {
+  animation: guideFloat 4000ms ease-in-out infinite;
+}
+
+@keyframes guideBreathe {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes guideFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-breathe,
+  .guide-float {
+    animation: none !important;
+  }
+}
+
+/* Profile (app/profile/page.tsx): Create Account button premium press feel */
+.velis-primary-btn:active {
+  transform: scale(0.97);
+}
+
+/* RitualObject: telefon genişliklerinde çubuk masaüstüne göre çok ince
+   kalıyordu - SADECE dar ekranlarda biraz kalınlaştırıyor, masaüstündeki
+   clamp() hiç değişmiyor. */
+@media (max-width: 480px) {
+  .ritual-ceramic-body {
+    width: 14px !important;
+  }
+}
+
+/* Profile (app/profile/page.tsx): "Almost Done" status-confirmation bottom sheet */
+.velis-sheet--slide-up {
+  animation: velisSheetSlideUp 300ms ease-out;
+}
+
+@keyframes velisSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .velis-sheet--slide-up {
+    animation: none !important;
+  }
 }
