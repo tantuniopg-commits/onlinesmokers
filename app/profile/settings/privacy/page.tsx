@@ -1,70 +1,51 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { SettingsShell, SettingsCard, SettingsRow, SANS } from '../shared'
-import { buildExportPayload } from '../../../services/SettingsService'
+import { SettingsShell, SettingsCard, SettingsRow } from '../shared'
 import { useLocale } from '../../../contexts/LocaleContext'
+import { getPrivacyPolicy, getTermsOfService } from '../../../lib/legalDocuments'
+import LegalReader from '../../../LegalReader'
 
-type Expanded = 'privacy' | 'terms' | null
+type OpenDoc = 'privacy' | 'terms' | null
 
 export default function PrivacySecuritySettings() {
-  const router = useRouter()
-  const { t } = useLocale()
-  const [expanded, setExpanded] = useState<Expanded>(null)
-  const [exported, setExported] = useState(false)
+  const { t, locale } = useLocale()
+  const [openDoc, setOpenDoc] = useState<OpenDoc>(null)
+  const [progress, setProgress] = useState(0)
 
-  // Gerçek bir dışa aktarma - kullanıcının cihazda tutulan tüm verisini
-  // (kimlik, Journey/XP, tercihler) tek bir JSON dosyası olarak indiriyor.
-  // Backend olmadığı için bu, "kendi verin senindir" ilkesini somut olarak
-  // uygulayabildiğimiz TEK yer.
-  const exportData = () => {
-    const payload = buildExportPayload()
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'velis-data-export.json'
-    a.click()
-    URL.revokeObjectURL(url)
-    setExported(true)
-    setTimeout(() => setExported(false), 1800)
+  // Kayıt akışındaki (bkz. app/profile/page.tsx) AYNI gerçek doküman ve
+  // AYNI okuyucu bileşeni - metin burada tekrarlanmıyor, tek kaynak
+  // lib/legalDocuments.ts.
+  if (openDoc) {
+    return (
+      <LegalReader
+        doc={openDoc === 'privacy' ? getPrivacyPolicy(locale) : getTermsOfService(locale)}
+        progress={progress}
+        onProgress={setProgress}
+        onBack={() => setOpenDoc(null)}
+        onUnderstand={() => setOpenDoc(null)}
+      />
+    )
   }
 
   return (
     <SettingsShell title={t('settings.privacy.title')}>
       <SettingsCard>
-        <SettingsRow label={t('settings.privacy.changePassword')} onClick={() => router.push('/profile/settings/account')} first />
-        <SettingsRow
-          label={exported ? t('settings.privacy.exported') : t('settings.privacy.exportData')}
-          onClick={exportData}
-          chevron={!exported}
-        />
-      </SettingsCard>
-
-      <SettingsCard>
         <SettingsRow
           label={t('settings.privacy.privacyPolicy')}
-          onClick={() => setExpanded(expanded === 'privacy' ? null : 'privacy')}
-          chevron={expanded !== 'privacy'}
+          onClick={() => {
+            setProgress(0)
+            setOpenDoc('privacy')
+          }}
           first
         />
-        {expanded === 'privacy' && (
-          <p style={{ margin: 0, padding: '0 20px 18px', fontFamily: SANS, fontSize: '13px', color: '#8F8A83', lineHeight: 1.5 }}>
-            {t('settings.privacy.privacyPolicyNote')}
-          </p>
-        )}
-
         <SettingsRow
           label={t('settings.privacy.termsOfService')}
-          onClick={() => setExpanded(expanded === 'terms' ? null : 'terms')}
-          chevron={expanded !== 'terms'}
+          onClick={() => {
+            setProgress(0)
+            setOpenDoc('terms')
+          }}
         />
-        {expanded === 'terms' && (
-          <p style={{ margin: 0, padding: '0 20px 18px', fontFamily: SANS, fontSize: '13px', color: '#8F8A83', lineHeight: 1.5 }}>
-            {t('settings.privacy.termsOfServiceNote')}
-          </p>
-        )}
       </SettingsCard>
     </SettingsShell>
   )

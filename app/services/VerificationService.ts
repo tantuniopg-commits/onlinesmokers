@@ -2,67 +2,39 @@
 // kodu doğru girdi mi" sorusuna cevap veriyor (AuthService'ten KASITLI OLARAK
 // bağımsız, tıpkı AppStateManager'ın auth'tan bağımsız olması gibi).
 //
-// ŞU AN: gerçek bir SMS/e-posta sağlayıcısı YOK - sadece development/test
-// amaçlı, kodu üretip yerelde saklıyor ("gönderim" sadece dev konsoluna
-// yazdırılıyor + Developer Panel > Verification'da gösteriliyor).
-//
-// GERÇEK SAĞLAYICIYA GEÇİŞ: sadece `simulateSend` fonksiyonunun içini
-// değiştirmek yeterli olacak (Telefon: Twilio / Firebase Phone Auth; E-posta:
-// Resend / SendGrid / Supabase Auth) - `sendOtp`/`verifyOtp`'nin dışa açık
-// imzası ve UI'daki hiçbir şey değişmeyecek.
+// Kod üretimi/hash'leme/doğrulama sunucuda (bkz. /server/src/controllers/
+// otpController.js) - bu dosya sadece o API'ye ince bir istemci katmanı
+// (bkz. lib/otpApi.ts) artı yerel UI durumu (sent/resend/expiry sayaçları
+// için, bkz. lib/verification.ts). E-posta gerçekten gönderiliyor (bkz.
+// server/src/lib/mailer.js - Resend/SMTP varsa gerçek sağlayıcı, yoksa
+// Ethereal test gelen kutusu). Telefon için henüz gerçek bir SMS sağlayıcısı
+// yok, sunucu konsoluna yazdırılıyor (bkz. otpController.js simulatePhoneSend).
 import { getOtpRecord, saveOtpRecord, clearOtpRecord } from '../lib/verification'
 import type { OtpChannel, OtpRecord } from '../lib/verification'
-import { isDev } from '../constants/env'
+import { sendOtpRequest, verifyOtpRequest } from '../lib/otpApi'
 
 export type { OtpChannel, OtpRecord }
+export { OtpApiError } from '../lib/otpApi'
 
-const OTP_LENGTH = 6
-const EXPIRY_MS = 5 * 60 * 1000
 const RESEND_COOLDOWN_MS = 60 * 1000
 
-function generateOtpCode(): string {
-  const min = 10 ** (OTP_LENGTH - 1)
-  const max = 10 ** OTP_LENGTH
-  return String(Math.floor(min + Math.random() * (max - min)))
-}
-
-// Gerçek sağlayıcı bağlanınca burası bir API çağrısına dönüşecek (Twilio/
-// Firebase Phone Auth için telefon, Resend/SendGrid/Supabase Auth için
-// e-posta) - şimdilik sadece dev konsoluna yazdırıyor, kod zaten Developer
-// Panel > Verification'da görülebiliyor.
-function simulateSend(channel: OtpChannel, destination: string, code: string) {
-  if (isDev) console.log(`[VerificationService] ${channel} OTP for ${destination || '(unknown)'}: ${code}`)
-}
-
-// Yeni üretilen kod, DİĞER kanalın o an aktif kodu ile ASLA aynı olmuyor
-// (spec gereği) - iki kanal bağımsız üretiliyor ama çakışma ihtimaline karşı
-// açıkça kontrol ediliyor.
-function generateUniqueOtpCode(channel: OtpChannel): string {
-  const otherChannel: OtpChannel = channel === 'phone' ? 'email' : 'phone'
-  const otherCode = getOtpRecord(otherChannel)?.code
-  let code = generateOtpCode()
-  while (code === otherCode) code = generateOtpCode()
-  return code
-}
-
-export function sendOtp(channel: OtpChannel, destination: string): OtpRecord {
-  const now = Date.now()
+export async function sendOtp(channel: OtpChannel, destination: string, force?: boolean): Promise<OtpRecord> {
+  const result = await sendOtpRequest(channel, destination, force)
   const record: OtpRecord = {
-    code: generateUniqueOtpCode(channel),
     destination,
-    generatedAt: now,
-    expiresAt: now + EXPIRY_MS,
+    generatedAt: Date.now(),
+    expiresAt: result.expiresAt,
+    devCode: result.devCode,
   }
   saveOtpRecord(channel, record)
-  simulateSend(channel, destination, record.code)
   return record
 }
 
-export function verifyOtp(channel: OtpChannel, inputCode: string): boolean {
+export async function verifyOtp(channel: OtpChannel, inputCode: string): Promise<boolean> {
   const record = getOtpRecord(channel)
   if (!record) return false
   if (Date.now() > record.expiresAt) return false
-  const valid = record.code === inputCode.trim()
+  const valid = await verifyOtpRequest(channel, record.destination, inputCode)
   if (valid) clearOtpRecord(channel)
   return valid
 }
@@ -91,9 +63,9 @@ export function getOtpExpiryRemainingMs(channel: OtpChannel): number {
 
 // Developer Panel'in "Regenerate" kontrolü - cooldown'u bypass ediyor
 // (dev-only kısayol), mevcut kaydın hedefini (varsa) koruyor.
-export function devRegenerateOtp(channel: OtpChannel): OtpRecord {
+export async function devRegenerateOtp(channel: OtpChannel): Promise<OtpRecord> {
   const destination = getOtpRecord(channel)?.destination ?? ''
-  return sendOtp(channel, destination)
+  return sendOtp(channel, destination, true)
 }
 
 // Developer Panel'in Reset bölümü / factoryReset için.

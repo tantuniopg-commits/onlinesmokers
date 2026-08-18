@@ -224,14 +224,6 @@ function DayCard({
   )
 }
 
-function SparkleIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2 L14.2 9.8 L22 12 L14.2 14.2 L12 22 L9.8 14.2 L2 12 L9.8 9.8 Z" fill="#F3CE8E" />
-    </svg>
-  )
-}
-
 export default function Journey() {
   const router = useRouter()
   const { unlocked, setJourneyRevealPending } = useAppNav()
@@ -415,8 +407,9 @@ export default function Journey() {
         </div>
       </div>
 
-      {cooldownMs !== null && (
+      {journeyTimestampRef.current !== null && (
         <div
+          className={cooldownMs === null ? 'journey-ready--pulse' : undefined}
           style={{
             marginTop: '18px',
             width: '100%',
@@ -429,6 +422,7 @@ export default function Journey() {
             border: '1px solid rgba(255, 178, 90, 0.22)',
             background: 'rgba(255, 178, 90, 0.03)',
             padding: '16px 20px',
+            transition: 'border-color 300ms ease-in-out, box-shadow 300ms ease-in-out',
           }}
         >
           <div
@@ -441,9 +435,11 @@ export default function Journey() {
               color: '#9A948C',
             }}
           >
-            Next Journey Day
+            {t('journey.nextDay.label')}
           </div>
-          <div style={{ fontFamily: FONT_SANS, fontWeight: 400, fontSize: '14px', color: '#D2CCC5' }}>Available in</div>
+          <div style={{ fontFamily: FONT_SANS, fontWeight: 400, fontSize: '14px', color: '#D2CCC5' }}>
+            {t('journey.nextDay.availableIn')}
+          </div>
           <div
             style={{
               fontFamily: FONT_SANS,
@@ -453,64 +449,10 @@ export default function Journey() {
               color: '#E3C08C',
             }}
           >
-            {formatCooldown(cooldownMs)}
+            {formatCooldown(cooldownMs ?? 0)}
           </div>
         </div>
       )}
-
-      <div
-        style={{
-          marginTop: '18px',
-          width: '100%',
-          maxWidth: '560px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(255, 255, 255, 0.02)',
-          padding: '18px 20px',
-        }}
-      >
-        <div
-          style={{
-            flexShrink: 0,
-            width: '38px',
-            height: '38px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'radial-gradient(circle, rgba(255, 178, 90, 0.16) 0%, rgba(255, 178, 90, 0.03) 70%)',
-            border: '1px solid rgba(255, 178, 90, 0.25)',
-          }}
-        >
-          <SparkleIcon />
-        </div>
-        <div>
-          <div
-            style={{
-              fontFamily: FONT_SANS,
-              fontWeight: 600,
-              fontSize: '18px',
-              color: '#F5F0EA',
-            }}
-          >
-            Keep choosing yourself.
-          </div>
-          <div
-            style={{
-              marginTop: '4px',
-              fontFamily: FONT_SANS,
-              fontWeight: 400,
-              fontSize: '14px',
-              color: '#9A948C',
-            }}
-          >
-            You&apos;re building <span style={{ color: '#D2CCC5' }}>something meaningful.</span>
-          </div>
-        </div>
-      </div>
 
       <div style={{ height: 'calc(80px + env(safe-area-inset-bottom))', flexShrink: 0 }} />
     </main>

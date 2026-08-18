@@ -10,7 +10,7 @@ export default function PremiumSettings() {
       <div
         style={{
           width: '100%',
-          maxWidth: '560px',
+          maxWidth: '380px',
           border: '1px solid rgba(255, 178, 90, 0.22)',
           borderRadius: '20px',
           background: 'rgba(255, 178, 90, 0.03)',

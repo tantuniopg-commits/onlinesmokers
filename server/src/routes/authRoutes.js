@@ -1,6 +1,20 @@
 const express = require('express')
 const requireAuth = require('../middleware/auth')
-const { register, login, me, updateStats, leaderboard, listUsers, checkEmail, checkPhone } = require('../controllers/authController')
+const {
+  register,
+  login,
+  me,
+  updateStats,
+  updateProfile,
+  updatePreferences,
+  updatePassword,
+  removeAccount,
+  leaderboard,
+  listUsers,
+  checkEmail,
+  checkPhone,
+} = require('../controllers/authController')
+const { forgotPassword, verifyResetCode, resetPassword } = require('../controllers/passwordResetController')
 
 const router = express.Router()
 
@@ -10,6 +24,13 @@ router.post('/register', asyncHandler(register))
 router.post('/login', asyncHandler(login))
 router.get('/me', requireAuth, asyncHandler(me))
 router.patch('/stats', requireAuth, asyncHandler(updateStats))
+router.patch('/profile', requireAuth, asyncHandler(updateProfile))
+router.patch('/preferences', requireAuth, asyncHandler(updatePreferences))
+router.patch('/password', requireAuth, asyncHandler(updatePassword))
+router.delete('/account', requireAuth, asyncHandler(removeAccount))
+router.post('/forgot-password', asyncHandler(forgotPassword))
+router.post('/verify-reset-code', asyncHandler(verifyResetCode))
+router.post('/reset-password', asyncHandler(resetPassword))
 router.get('/leaderboard', asyncHandler(leaderboard))
 router.get('/check-email', asyncHandler(checkEmail))
 router.get('/check-phone', asyncHandler(checkPhone))

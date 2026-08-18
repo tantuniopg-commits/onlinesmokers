@@ -39,7 +39,7 @@ function ChannelBlock({ channel, label }: { channel: OtpChannel; label: string }
   const handleCopy = async () => {
     if (!record) return
     try {
-      await navigator.clipboard.writeText(record.code)
+      await navigator.clipboard.writeText(record.devCode ?? '')
       setCopied(true)
       setTimeout(() => setCopied(false), 1200)
     } catch {
@@ -52,11 +52,11 @@ function ChannelBlock({ channel, label }: { channel: OtpChannel; label: string }
       <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '1px', color: colors.muted, textTransform: 'uppercase' }}>
         {label}
       </div>
-      <Row label="Current OTP" value={record?.code ?? '—'} />
+      <Row label="Current OTP" value={record?.devCode ?? '—'} />
       <Row label="Generated Time" value={record ? formatTime(record.generatedAt) : '—'} />
       <Row label="Expiration Countdown" value={record ? formatClock(remainingMs) : '—'} />
       <div style={buttonGridStyle}>
-        <button style={buttonStyle()} onClick={handleCopy} disabled={!record}>
+        <button style={buttonStyle()} onClick={handleCopy} disabled={!record?.devCode}>
           {copied ? 'Copied' : 'Copy'}
         </button>
         <button style={buttonStyle('primary')} onClick={() => devRegenerateOtp(channel)}>

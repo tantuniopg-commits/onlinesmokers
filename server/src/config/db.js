@@ -13,6 +13,7 @@ const PERSIST_DB_PATH = path.join(__dirname, '../../.data/mongo')
 
 async function connectDB() {
   let uri = process.env.MONGO_URI
+  const isLocalZeroConfig = !uri
 
   if (!uri) {
     fs.mkdirSync(PERSIST_DB_PATH, { recursive: true })
@@ -28,7 +29,12 @@ async function connectDB() {
     console.log('No MONGO_URI set - using persistent local MongoDB at', uri, '(data on disk at', PERSIST_DB_PATH, ')')
   }
 
-  await mongoose.connect(uri)
+  // mongod.getUri() bir db adı İÇERMİYOR - dbName burada açıkça verilmezse
+  // mongoose sessizce "test" veritabanına düşüyor (yukarıdaki dbName:'puffless'
+  // sadece dosyaların diskteki adını belirliyor, bağlanılan mantıksal DB'yi
+  // DEĞİL). Sadece zero-config yerel yolda zorluyoruz - gerçek bir MONGO_URI
+  // verildiyse (üretim) o URI'nin kendi db adı olduğu gibi kullanılıyor.
+  await mongoose.connect(uri, isLocalZeroConfig ? { dbName: 'puffless' } : undefined)
   console.log('MongoDB connected')
 }
 

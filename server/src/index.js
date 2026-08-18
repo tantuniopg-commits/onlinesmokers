@@ -3,6 +3,9 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
+const otpRoutes = require('./routes/otpRoutes')
+const { startCooldownReminderJob } = require('./jobs/cooldownReminder')
+const { startJourneyReminderJob } = require('./jobs/journeyReminder')
 
 // Zero-config yerel geliştirme için (.env yoksa) - üretimde .env üzerinden
 // gerçek bir secret ayarlanmalı.
@@ -15,6 +18,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/auth', authRoutes)
+app.use('/api/otp', otpRoutes)
 
 app.get('/health', (req, res) => res.json({ ok: true }))
 
@@ -28,6 +32,8 @@ const port = process.env.PORT || 4000
 connectDB()
   .then(() => {
     app.listen(port, () => console.log(`Auth server listening on port ${port}`))
+    startCooldownReminderJob()
+    startJourneyReminderJob()
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err)

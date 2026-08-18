@@ -21,6 +21,15 @@
 /.next/
 /out/
 
+# capacitor / ios (native App Store paketleme, bkz. capacitor.config.ts) -
+# ios/App/App/public ve Pods her `npm run build:capacitor` ile yeniden
+# üretiliyor, native proje dosyalarının (App.xcodeproj, AppDelegate.swift
+# vb.) kendisi commit'leniyor.
+/ios/App/App/public
+/ios/App/Pods
+/ios/App/.build
+/ios/DerivedData
+
 # production
 /build
 

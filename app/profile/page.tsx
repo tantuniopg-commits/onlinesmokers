@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent, ReactNode, RefObject } from 'react'
 import VelisMark from '../VelisMark'
-import { getStoredStats, saveStats } from '../lib/auth'
+import { getStoredStats, saveStats, getStoredToken } from '../lib/auth'
 import type { VelisUser, VelisStats } from '../lib/auth'
+import { getStoredSettings } from '../lib/settings'
 import { getStoredUser, validateSignupForm, createAccount, saveToken, getPasswordRuleStatus } from '../services/AuthService'
 import type { PasswordRuleId } from '../services/AuthService'
-import { registerRequest, loginRequest, AuthApiError, checkEmailAvailableRequest, checkPhoneAvailableRequest } from '../lib/authApi'
+import { registerRequest, loginRequest, AuthApiError, checkEmailAvailableRequest, checkPhoneAvailableRequest, updatePreferencesRequest } from '../lib/authApi'
 import { getTodayIndexMondayFirst } from '../services/TimeService'
 import { useAppNav } from '../contexts/AppNavContext'
 import { getAppState, setAppState } from '../services/AppStateManager'
@@ -15,9 +16,10 @@ import { getUserType, saveUserType } from '../lib/onboarding'
 import type { UserType } from '../lib/onboarding'
 import { LeafIcon, CigaretteIcon } from '../WhoAreYouScreen'
 import { SettingsRow, ChevronRightIcon, CheckIcon } from './settings/shared'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../lib/legalDocuments'
+import { getPrivacyPolicy, getTermsOfService } from '../lib/legalDocuments'
 import LegalReader from '../LegalReader'
 import OtpStep from '../OtpStep'
+import ForgotPasswordFlow from '../ForgotPasswordFlow'
 import DevPanel from '../devpanel/DevPanel'
 import { useRouter } from 'next/navigation'
 import { FONT_SANS } from '../lib/typography'
@@ -438,7 +440,7 @@ function StatusCard({
 export default function Profile() {
   const router = useRouter()
   const { refreshAppState } = useAppNav()
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [phase, setPhase] = useState<Phase | null>(null)
   const [displayPhase, setDisplayPhase] = useState<Phase | null>(null)
   const [fadeVisible, setFadeVisible] = useState(false)
@@ -471,6 +473,7 @@ export default function Profile() {
   // istatistikleri) hızlıca geri kuruyor. Gerçek backend bağlanınca bu mod
   // gerçek bir login çağrısına dönüşecek.
   const [mode, setMode] = useState<'create' | 'signin'>('create')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -571,6 +574,21 @@ export default function Profile() {
     // REGISTERED'a taşıyor - burada sadece context'i o güncel değeri
     // yansıtacak şekilde tazeliyoruz (nav'ı hemen açar, nabzı kesin kapatır).
     refreshAppState()
+    // Giriş/kayıt anındaki güncel yerel tercihleri (dil + bildirimler)
+    // sunucuya senkronluyoruz - aksi halde sunucudaki soğuma hatırlatma
+    // job'ı (bkz. server/src/jobs/cooldownReminder.js) bir sonraki toggle
+    // değişikliğine kadar varsayılan (EN, açık) değerleri görürdü.
+    const token = getStoredToken()
+    if (token) {
+      const local = getStoredSettings()
+      updatePreferencesRequest(token, {
+        locale: local.language,
+        notificationPrefs: {
+          dailyRitualReminder: local.notifications.dailyRitualReminder,
+          journeyReminder: local.notifications.journeyReminder,
+        },
+      }).catch(() => {})
+    }
   }
 
   const [authError, setAuthError] = useState<string | null>(null)
@@ -606,9 +624,14 @@ export default function Profile() {
     setOpenedDocument(null)
   }
 
+  // Telefon OTP adımı GEÇİCİ OLARAK devre dışı (bkz. talep) - sadece e-posta
+  // doğrulaması kalıyor. Telefon numarası formda hâlâ toplanıp kaydediliyor,
+  // sadece ayrı bir doğrulama ekranı atlanıyor. Geri açmak için burayı
+  // `setPhase('confirmPhone')` yap (bkz. displayPhase === 'confirmPhone'
+  // bloğu, hâlâ aşağıda duruyor, silinmedi).
   const handleContinueFromLegal = () => {
     if (!bothDocsOpened || !agreeChecked) return
-    setPhase('confirmPhone')
+    setPhase('confirmEmail')
   }
 
   const fullPhoneNumber = `${countryCode} ${phoneDigits.join('')}`.trim()
@@ -631,7 +654,8 @@ export default function Profile() {
         email.trim(),
         password,
         fullPhoneNumber,
-        getStoredStats()
+        getStoredStats(),
+        locale
       )
       saveToken(result.token)
       finishAuth(createAccount({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), id: result.user.id }))
@@ -738,6 +762,19 @@ export default function Profile() {
 
   if (phase === null || displayPhase === null) {
     return <main style={{ minHeight: '100vh', background: '#050505' }} />
+  }
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPasswordFlow
+        onCancel={() => setShowForgotPassword(false)}
+        onDone={(resetEmail) => {
+          setShowForgotPassword(false)
+          setMode('signin')
+          setEmail(resetEmail)
+        }}
+      />
+    )
   }
 
   return (
@@ -1074,6 +1111,24 @@ export default function Profile() {
             </div>
           </div>
 
+          {mode === 'signin' && (
+            <button
+              onClick={() => setShowForgotPassword(true)}
+              style={{
+                marginTop: '14px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: FONT_SANS,
+                fontWeight: 400,
+                fontSize: '13px',
+                color: '#E3C08C',
+              }}
+            >
+              {t('passwordReset.link')}
+            </button>
+          )}
+
           <button
             onClick={() => {
               setAuthError(null)
@@ -1208,7 +1263,7 @@ export default function Profile() {
 
       {openedDocument && (
         <LegalReader
-          doc={openedDocument === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE}
+          doc={openedDocument === 'privacy' ? getPrivacyPolicy(locale) : getTermsOfService(locale)}
           progress={readProgress}
           onProgress={setReadProgress}
           onBack={() => setOpenedDocument(null)}

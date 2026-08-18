@@ -29,6 +29,13 @@ import type { AppLifecycleState } from '../services/AppStateManager'
 //    mount olduğu için bu bayrak istemci-taraflı gezinmeler boyunca kalıcı,
 //    sadece gerçek bir sayfa yenilemesinde sıfırlanıyor - tam istenen davranış.
 
+// sessionStorage'a bağlı - salt bellek-içi state, herhangi bir gerçek sayfa
+// yenilemesinde (hard reload/remount) sıfırlanıp introyu YANLIŞLIKLA tekrar
+// oynatabiliyordu. sessionStorage aynı tarayıcı sekmesi/oturumu boyunca
+// kalıcı, sadece sekme kapanıp yeni bir oturum başlayınca sıfırlanıyor -
+// tam istenen "sadece uygulamaya gerçekten ilk girince oyna" davranışı.
+const INTRO_PLAYED_KEY = 'velis_intro_played'
+
 type TabMemory = Record<TabKey, string>
 
 const DEFAULT_TAB_PATHS: TabMemory = {
@@ -83,6 +90,17 @@ export function AppNavProvider({ children }: { children: ReactNode }) {
     refreshAppState()
   }, [refreshAppState])
 
+  // Hydration-safe: sessionStorage sadece mount SONRASI okunuyor (SSR/ilk
+  // istemci render'ı her zaman false ile başlıyor, bu projede zaten kurulu
+  // desen). Bu oturumda daha önce oynadıysa Home ('/') hiç mount olmadan
+  // ÖNCE bile bu true'ya döner - IntroSplash koşulu (introDone'un başlangıç
+  // değeri) bunu doğru yakalar.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.sessionStorage.getItem(INTRO_PLAYED_KEY) === '1') {
+      setIntroPlayed(true)
+    }
+  }, [])
+
   const unlocked = appState === 'REGISTERED'
   const guidedRegistrationActive = appState === 'GUEST' || appState === 'REGISTERING'
 
@@ -90,11 +108,17 @@ export function AppNavProvider({ children }: { children: ReactNode }) {
     setTabMemory((prev) => (prev[tab] === path ? prev : { ...prev, [tab]: path }))
   }, [])
 
-  const markIntroPlayed = useCallback(() => setIntroPlayed(true), [])
+  const markIntroPlayed = useCallback(() => {
+    setIntroPlayed(true)
+    if (typeof window !== 'undefined') window.sessionStorage.setItem(INTRO_PLAYED_KEY, '1')
+  }, [])
   // Developer Panel'in "Replay Splash" kontrolü için (bkz.
   // devpanel/sections/Animations) - introu bir sonraki '/' ziyaretinde
   // tekrar oynatılabilir hale getiriyor.
-  const resetIntroPlayed = useCallback(() => setIntroPlayed(false), [])
+  const resetIntroPlayed = useCallback(() => {
+    setIntroPlayed(false)
+    if (typeof window !== 'undefined') window.sessionStorage.removeItem(INTRO_PLAYED_KEY)
+  }, [])
 
   const value = useMemo(
     () => ({

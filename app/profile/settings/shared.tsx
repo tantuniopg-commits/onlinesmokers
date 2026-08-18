@@ -26,7 +26,7 @@ export function labelStyle(color: string) {
 
 export const cardStyle = {
   width: '100%',
-  maxWidth: '560px',
+  maxWidth: '380px',
   border: '1px solid rgba(255, 255, 255, 0.08)',
   borderRadius: '20px',
   background: 'rgba(255, 255, 255, 0.02)',
@@ -89,7 +89,7 @@ export function SettingsShell({
         padding: '56px 20px 0',
       }}
     >
-      <div style={{ width: '100%', maxWidth: '560px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '380px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <button
           onClick={() => router.push(backTo)}
           aria-label="Back"
@@ -118,7 +118,7 @@ export function SettingsShell({
         </h1>
       </div>
 
-      <div style={{ marginTop: '32px', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <div style={{ marginTop: '32px', width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
         {children}
       </div>
 

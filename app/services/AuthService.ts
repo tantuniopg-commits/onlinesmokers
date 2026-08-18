@@ -4,10 +4,11 @@
 // artık userRepository üzerinden geçiyor (bkz. repositories/) - Stats hâlâ
 // doğrudan lib/auth.ts üzerinden (repository soyutlaması şimdilik sadece
 // User için, bkz. repositories/index.ts'teki not).
-import { clearStats, clearToken } from '../lib/auth'
+import { clearStats, clearToken, getStoredToken } from '../lib/auth'
 import type { VelisUser } from '../lib/auth'
 import { userRepository } from '../repositories'
 import { setAppState } from './AppStateManager'
+import { updateProfileRequest, changePasswordRequest, deleteAccountRequest } from '../lib/authApi'
 
 export * from '../lib/auth'
 
@@ -108,27 +109,46 @@ export function createAccount(input: { firstName: string; lastName: string; emai
   return user
 }
 
-export function updateUserName(user: VelisUser, firstName: string, lastName: string): VelisUser | null {
+// Token varsa (gerçek hesap) sunucudaki `name` alanı da güncelleniyor -
+// başarısız olursa (ağ/sunucu hatası) yerel de değiştirilmiyor, aksi halde
+// ekran "kaydedildi" gösterip DB'de sessizce eski kalır (bkz. journey stats
+// senkron sorunundaki tutarsızlık, burada aynı hatayı tekrarlamıyoruz).
+// Misafir modda (token yok) sadece yerel - hiç sunucu hesabı yok zaten.
+export async function updateUserName(user: VelisUser, firstName: string, lastName: string): Promise<VelisUser | null> {
   if (!firstName.trim() || !lastName.trim()) return null
   const next: VelisUser = { ...user, firstName: firstName.trim(), lastName: lastName.trim() }
+  const token = getStoredToken()
+  if (token) {
+    try {
+      await updateProfileRequest(token, `${next.firstName} ${next.lastName}`.trim())
+    } catch {
+      return null
+    }
+  }
   saveUser(next)
   return next
 }
 
-export function updateUserEmail(user: VelisUser, email: string): VelisUser | null {
-  if (!email.trim()) return null
-  const next: VelisUser = { ...user, email: email.trim() }
-  saveUser(next)
-  return next
-}
-
-// NOT: VELIS henüz gerçek bir kimlik doğrulama backend'i kullanmıyor - hesap
-// oluşturma sırasında şifre asla saklanmıyor (bkz. lib/auth.ts, VelisUser
-// tipinde password alanı yok). Bu fonksiyon bu yüzden gerçek bir şifreyi
-// doğrulayıp değiştiremiyor; arayüz/akış burada hazır, gerçek backend
-// bağlanınca bu fonksiyon onu çağıracak.
-export function changePassword(newPassword: string, confirmPassword: string): boolean {
-  return newPassword.length >= 6 && newPassword === confirmPassword
+// Gerçek şifre değişimi - hesap oluşturma formuyla BİREBİR aynı kural seti
+// (bkz. isPasswordValid), sunucu mevcut şifreyi doğruladıktan sonra
+// değiştiriyor (bkz. server/src/controllers/authController.js updatePassword)
+// ve o anki uygulama diline göre bir bildirim e-postası gönderiyor. Misafir
+// modda (token yok) değiştirilecek gerçek bir şifre yok.
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+  locale: string
+): Promise<boolean> {
+  if (!isPasswordValid(newPassword) || newPassword !== confirmPassword) return false
+  const token = getStoredToken()
+  if (!token) return false
+  try {
+    await changePasswordRequest(token, currentPassword, newPassword, locale)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function logOut(): void {
@@ -139,7 +159,20 @@ export function logOut(): void {
   setAppState('GUEST')
 }
 
-export function deleteAccount(): void {
+// Token varsa hesap sunucudan da GERÇEKTEN siliniyor - aksi halde silinen
+// hesap DB'de kalıp Leaderboard'da görünmeye devam ederdi (bkz.
+// authController.js removeAccount, leaderboard() canlı User.find({})
+// sorgusu). Sunucu isteği başarısız olsa bile (ör. offline) kullanıcıyı
+// yerelde kilitli bırakmamak için yerel temizlik yine de yapılıyor.
+export async function deleteAccount(): Promise<void> {
+  const token = getStoredToken()
+  if (token) {
+    try {
+      await deleteAccountRequest(token)
+    } catch (err) {
+      console.error('[AuthService] Failed to delete account on server', err)
+    }
+  }
   clearUser()
   clearStats()
   clearToken()

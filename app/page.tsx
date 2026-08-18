@@ -142,6 +142,14 @@ function HomeInner() {
   const [userTypeDone, setUserTypeDone] = useState(true)
   const [welcomeDone, setWelcomeDone] = useState(true)
 
+  // introPlayed (sessionStorage'dan) mount SONRASI (bir effect içinde) true
+  // olabilir - introDone'un başlangıç değeri bunu kaçırmışsa burada
+  // yakalıyoruz. SADECE ileri yönde (false -> true) senkronluyor, ASLA
+  // introDone'u zaten true iken false'a döndürmüyor.
+  useEffect(() => {
+    if (introPlayed) setIntroDone(true)
+  }, [introPlayed])
+
   useEffect(() => {
     if (isDev && searchParams.get('reset') === '1') {
       factoryReset()

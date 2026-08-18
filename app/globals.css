@@ -187,6 +187,32 @@ body {
   }
 }
 
+/* Journey (app/journey/page.tsx): "Next Journey Day" kartı - soğuma tam
+   bitip 00h 00m'e ulaşınca dikkat çekmesi için belirgin bir amber parlama. */
+.journey-ready--pulse {
+  animation: journeyReadyPulse 2000ms ease-in-out infinite;
+}
+
+@keyframes journeyReadyPulse {
+  0%,
+  100% {
+    border-color: rgba(255, 178, 90, 0.45);
+    box-shadow: 0 0 14px 2px rgba(255, 178, 90, 0.3);
+  }
+  50% {
+    border-color: rgba(255, 178, 90, 0.9);
+    box-shadow: 0 0 26px 6px rgba(255, 178, 90, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-ready--pulse {
+    animation: none !important;
+    border-color: rgba(255, 178, 90, 0.7) !important;
+    box-shadow: 0 0 18px 3px rgba(255, 178, 90, 0.4) !important;
+  }
+}
+
 /* Ritual Home (app/page.tsx): calm ambient motion around the (untouched)
    ritual object - background glow breathing, the object's own wrapper
    floating by 1-2px, and the idle tap-hand icon gently pulsing. */

@@ -6,7 +6,14 @@ import type { VelisStats } from './auth'
 
 const AUTH_API_PORT = 4000
 
-function apiBase() {
+// Native paket (Capacitor - bkz. capacitor.config.ts) içindeki WebView
+// `window.location.hostname`'i GERÇEK sunucunun adresi olarak DEĞİL,
+// `localhost`/`capacitor://` gibi kendi iç şemasını döndürür - o yüzden
+// window.location'dan türetmek orada çalışmıyor. Build zamanında gömülen
+// NEXT_PUBLIC_API_BASE_URL varsa (bkz. package.json build:capacitor script'i)
+// o kullanılıyor, yoksa (normal web/dev) eski davranış aynen sürüyor.
+export function apiBase() {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) return process.env.NEXT_PUBLIC_API_BASE_URL
   if (typeof window === 'undefined') return ''
   return `${window.location.protocol}//${window.location.hostname}:${AUTH_API_PORT}`
 }
@@ -40,8 +47,8 @@ async function request<T>(method: string, path: string, body?: unknown, token?: 
 // Email VE telefon her ikisi de sunucuda benzersiz (bkz. server/src/models/User.js
 // unique index'leri) - aynı email veya aynı telefonla ikinci bir hesap
 // açılamıyor, sunucu 409 ile "already in use" hatası dönüyor.
-export function registerRequest(name: string, email: string, password: string, phone?: string, stats?: VelisStats) {
-  return request<AuthApiResult>('POST', '/api/auth/register', { name, email, password, phone, stats })
+export function registerRequest(name: string, email: string, password: string, phone?: string, stats?: VelisStats, locale?: string) {
+  return request<AuthApiResult>('POST', '/api/auth/register', { name, email, password, phone, stats, locale })
 }
 
 export function loginRequest(email: string, password: string) {
@@ -55,6 +62,43 @@ export function loginRequest(email: string, password: string) {
 // başarısız olursa sessizce yutuluyor - yerel ilerleme buna bağlı değil.
 export function updateStatsRequest(token: string, stats: VelisStats) {
   return request<AuthApiUserResult>('PATCH', '/api/auth/stats', { stats }, token)
+}
+
+// Hesap Ayarları > İsmi Düzenle / Şifreyi Değiştir / Hesabı Sil - bkz.
+// app/profile/settings/account/page.tsx, app/services/AuthService.ts.
+export function updateProfileRequest(token: string, name: string) {
+  return request<AuthApiUserResult>('PATCH', '/api/auth/profile', { name }, token)
+}
+
+// Bildirim tercihleri / dil senkronu - sunucudaki soğuma hatırlatma job'ının
+// (bkz. server/src/jobs/cooldownReminder.js) kime/hangi dilde mail atacağını
+// bilmesi için. Best-effort: token yoksa (misafir) hiç çağrılmıyor.
+export function updatePreferencesRequest(token: string, prefs: { notificationPrefs?: { dailyRitualReminder?: boolean; journeyReminder?: boolean }; locale?: string }) {
+  return request<{ ok: true }>('PATCH', '/api/auth/preferences', prefs, token)
+}
+
+export function changePasswordRequest(token: string, currentPassword: string, newPassword: string, locale: string) {
+  return request<{ ok: true }>('PATCH', '/api/auth/password', { currentPassword, newPassword, locale }, token)
+}
+
+export function deleteAccountRequest(token: string) {
+  return request<{ ok: true }>('DELETE', '/api/auth/account', undefined, token)
+}
+
+// Şifremi Unuttum akışı - bkz. app/ForgotPasswordFlow.tsx. Token GEREKMİYOR
+// (kullanıcı henüz giriş yapamıyor, akışın amacı zaten bu).
+export type ForgotPasswordResult = { sent: true; devCode?: string }
+export function forgotPasswordRequest(email: string, locale: string) {
+  return request<ForgotPasswordResult>('POST', '/api/auth/forgot-password', { email, locale })
+}
+
+export type VerifyResetCodeResult = { valid: boolean; error?: string }
+export function verifyResetCodeRequest(email: string, code: string) {
+  return request<VerifyResetCodeResult>('POST', '/api/auth/verify-reset-code', { email, code })
+}
+
+export function resetPasswordRequest(email: string, code: string, newPassword: string) {
+  return request<{ ok: true }>('POST', '/api/auth/reset-password', { email, code, newPassword })
 }
 
 export type AuthApiLeaderboardUser = { id: string; name: string; stats?: VelisStats }

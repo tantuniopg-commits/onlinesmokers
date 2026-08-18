@@ -5,7 +5,10 @@
 export type OtpChannel = 'phone' | 'email'
 
 export type OtpRecord = {
-  code: string
+  // Gerçek kod artık istemciye hiç inmiyor (bkz. lib/otpApi.ts, server
+  // sadece hash saklıyor) - devCode SADECE production dışında, DevPanel'in
+  // Verification bölümü kolaylık olsun diye sunucudan geri gönderiliyor.
+  devCode?: string
   destination: string
   generatedAt: number
   expiresAt: number

@@ -67,6 +67,7 @@ export default function OtpStep({
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [sending, setSending] = useState(false)
   const [resendMs, setResendMs] = useState(0)
 
   useEffect(() => {
@@ -76,19 +77,27 @@ export default function OtpStep({
     return () => clearInterval(interval)
   }, [channel])
 
-  const handleSend = () => {
-    sendOtp(channel, destination)
-    setSent(true)
-    setCode('')
+  const handleSend = async () => {
+    if (sending) return
+    setSending(true)
     setError(null)
-    setResendMs(getResendRemainingMs(channel))
+    try {
+      await sendOtp(channel, destination)
+      setSent(true)
+      setCode('')
+      setResendMs(getResendRemainingMs(channel))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('otp.sendFailed'))
+    } finally {
+      setSending(false)
+    }
   }
 
   const handleVerify = async () => {
     if (code.trim().length === 0 || submitting) return
     setSubmitting(true)
     setError(null)
-    const ok = verifyOtp(channel, code)
+    const ok = await verifyOtp(channel, code)
     if (!ok) {
       setError(t('otp.incorrect'))
       setSubmitting(false)
@@ -189,8 +198,8 @@ export default function OtpStep({
             {submitting ? t('otp.verifying') : t('otp.verify')}
           </button>
         ) : (
-          <button className="velis-primary-btn" onClick={handleSend} style={primaryButtonStyle(true)}>
-            {t('otp.sendCode')}
+          <button className="velis-primary-btn" onClick={handleSend} style={primaryButtonStyle(!sending)}>
+            {sending ? t('otp.sending') : t('otp.sendCode')}
           </button>
         )}
       </div>
@@ -198,12 +207,12 @@ export default function OtpStep({
       {sent && (
         <button
           onClick={handleSend}
-          disabled={resendMs > 0}
+          disabled={resendMs > 0 || sending}
           style={{
             marginTop: '16px',
             background: 'none',
             border: 'none',
-            cursor: resendMs > 0 ? 'default' : 'pointer',
+            cursor: resendMs > 0 || sending ? 'default' : 'pointer',
             fontFamily: FONT_SANS,
             fontWeight: 400,
             fontSize: '13px',

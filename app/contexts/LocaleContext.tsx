@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { getStoredSettings, saveSettings } from '../lib/settings'
+import { getStoredToken } from '../lib/auth'
+import { updatePreferencesRequest } from '../lib/authApi'
 import { translate } from '../lib/i18n'
 import type { LocaleCode, TranslationKey } from '../lib/i18n'
 
@@ -37,6 +39,13 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(code)
     const current = getStoredSettings()
     saveSettings({ ...current, language: code })
+    // Sunucudaki soğuma hatırlatma job'ı hangi dilde mail atacağını buradan
+    // öğreniyor (bkz. server/src/jobs/cooldownReminder.js) - best-effort,
+    // gerçek hesapta (token varsa).
+    const token = getStoredToken()
+    if (token) {
+      updatePreferencesRequest(token, { locale: code }).catch(() => {})
+    }
   }, [])
 
   const t = useCallback((key: TranslationKey, vars?: Record<string, string | number>) => translate(locale, key, vars), [locale])

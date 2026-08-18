@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getStoredSettings, saveSettings } from '../services/SettingsService'
 import type { UserSettings, NotificationSettings, AppearanceSettings } from '../services/SettingsService'
+import { getStoredToken } from '../lib/auth'
+import { updatePreferencesRequest } from '../lib/authApi'
 
 // Ayarlar sayfalarının (language/notifications/appearance) her birinin
 // bağımsız olarak yaptığı "oku -> birleştir -> yaz" deseni burada tek
@@ -28,6 +30,15 @@ export function useSettings() {
       const current = prev ?? getStoredSettings()
       const next = { ...current, notifications: { ...current.notifications, [key]: value } }
       saveSettings(next)
+      // Sunucudaki soğuma hatırlatma job'ı (bkz. server/src/jobs/
+      // cooldownReminder.js) bu iki tercihi kullanıyor - gerçek hesapta
+      // (token varsa) best-effort senkronluyoruz, misafirde hiç çağrılmıyor.
+      if (key === 'dailyRitualReminder' || key === 'journeyReminder') {
+        const token = getStoredToken()
+        if (token) {
+          updatePreferencesRequest(token, { notificationPrefs: { [key]: value } }).catch(() => {})
+        }
+      }
       return next
     })
   }, [])
