@@ -18,6 +18,15 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Native app hissi - kullanıcı sayfayı parmakla "çekip" oynatamasın
+   (iOS WKWebView rubber-band / overscroll). Ekranlar zaten sabit yükseklikte
+   (100dvh) + gerçek kaydırma iç konteynerlerde; bu, o iç konteynerlerin de
+   kenara gelince zıplamasını engelliyor. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* Premium cross-fade between routes (e.g. Ritual Complete -> next screen).
    No slide, just old-screen-out / new-screen-in on the browser's default
    root view transition. */
