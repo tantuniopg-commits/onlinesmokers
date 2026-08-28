@@ -73,7 +73,7 @@ export function updateProfileRequest(token: string, name: string) {
 // Bildirim tercihleri / dil senkronu - sunucudaki soğuma hatırlatma job'ının
 // (bkz. server/src/jobs/cooldownReminder.js) kime/hangi dilde mail atacağını
 // bilmesi için. Best-effort: token yoksa (misafir) hiç çağrılmıyor.
-export function updatePreferencesRequest(token: string, prefs: { notificationPrefs?: { dailyRitualReminder?: boolean; journeyReminder?: boolean }; locale?: string }) {
+export function updatePreferencesRequest(token: string, prefs: { notificationPrefs?: { dailyRitualReminder?: boolean }; locale?: string }) {
   return request<{ ok: true }>('PATCH', '/api/auth/preferences', prefs, token)
 }
 

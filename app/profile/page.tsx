@@ -647,7 +647,6 @@ export default function Profile() {
         locale: local.language,
         notificationPrefs: {
           dailyRitualReminder: local.notifications.dailyRitualReminder,
-          journeyReminder: local.notifications.journeyReminder,
         },
       }).catch(() => {})
     }

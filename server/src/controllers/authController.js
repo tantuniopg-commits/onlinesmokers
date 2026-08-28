@@ -132,9 +132,6 @@ async function updatePreferences(req, res) {
     if ('dailyRitualReminder' in notificationPrefs) {
       update['notificationPrefs.dailyRitualReminder'] = !!notificationPrefs.dailyRitualReminder
     }
-    if ('journeyReminder' in notificationPrefs) {
-      update['notificationPrefs.journeyReminder'] = !!notificationPrefs.journeyReminder
-    }
   }
   if (locale === 'en' || locale === 'tr') update.locale = locale
 

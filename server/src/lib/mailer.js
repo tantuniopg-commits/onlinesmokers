@@ -284,34 +284,6 @@ async function sendCooldownReadyEmail(to, locale) {
   await sendCopyEmail(to, locale, COOLDOWN_READY_COPY)
 }
 
-// Yolculuk Hatırlatması (bkz. jobs/journeyReminder.js) - kişisel soğuma
-// sayacından bağımsız, her gün sabit bir saatte (20:00 Türkiye saati)
-// herkese giden ortak günlük bildirim.
-const JOURNEY_REMINDER_COPY = {
-  en: {
-    subject: "Don't lose your progress.",
-    lines: [
-      "<strong>Don't lose your progress.</strong>",
-      'Every ritual brings you closer to your reward.',
-      '<strong>One ritual. One step closer.</strong>',
-      'See you in VELIS.',
-    ],
-  },
-  tr: {
-    subject: 'İlerlemeni kaybetme.',
-    lines: [
-      '<strong>İlerlemeni kaybetme.</strong>',
-      'Her ritüel seni ödülüne bir adım daha yaklaştırıyor.',
-      '<strong>Bir ritüel. Bir adım daha yakın.</strong>',
-      'VELIS\'te görüşmek üzere.',
-    ],
-  },
-}
-
-async function sendJourneyReminderEmail(to, locale) {
-  await sendCopyEmail(to, locale, JOURNEY_REMINDER_COPY)
-}
-
 // Hediye günü geri sayımı (bkz. jobs/cooldownReminder.js) - kullanıcı bir
 // sonraki hediye gününe (her 7 günde bir, bkz. app/journey/page.tsx day % 7)
 // 3/2/1 gün kala, soğuma tam bittiği an gönderiliyor. Sayı OTP kodu gibi
@@ -383,6 +355,5 @@ module.exports = {
   sendCooldownReminderEmail,
   sendCooldownReadyEmail,
   sendWelcomeEmail,
-  sendJourneyReminderEmail,
   sendRewardCountdownEmail,
 }

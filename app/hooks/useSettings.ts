@@ -31,9 +31,9 @@ export function useSettings() {
       const next = { ...current, notifications: { ...current.notifications, [key]: value } }
       saveSettings(next)
       // Sunucudaki soğuma hatırlatma job'ı (bkz. server/src/jobs/
-      // cooldownReminder.js) bu iki tercihi kullanıyor - gerçek hesapta
+      // cooldownReminder.js) bu tercihi kullanıyor - gerçek hesapta
       // (token varsa) best-effort senkronluyoruz, misafirde hiç çağrılmıyor.
-      if (key === 'dailyRitualReminder' || key === 'journeyReminder') {
+      if (key === 'dailyRitualReminder') {
         const token = getStoredToken()
         if (token) {
           updatePreferencesRequest(token, { notificationPrefs: { [key]: value } }).catch(() => {})

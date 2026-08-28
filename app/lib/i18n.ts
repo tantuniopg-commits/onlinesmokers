@@ -103,7 +103,6 @@ export const translations = {
 
     'settings.notifications.title': 'Notifications',
     'settings.notifications.dailyRitualReminder': 'Daily Ritual Reminder',
-    'settings.notifications.journeyReminder': 'Journey Reminder',
 
     'settings.appearance.title': 'Appearance',
     'settings.appearance.darkMode': 'Dark Mode',
@@ -318,7 +317,6 @@ export const translations = {
 
     'settings.notifications.title': 'Bildirimler',
     'settings.notifications.dailyRitualReminder': 'Günlük Ritüel Hatırlatması',
-    'settings.notifications.journeyReminder': 'Yolculuk Hatırlatması',
 
     'settings.appearance.title': 'Görünüm',
     'settings.appearance.darkMode': 'Koyu Tema',

@@ -33,7 +33,6 @@ const userSchema = new mongoose.Schema(
     // client bunları toggle/dil değişince best-effort senkronluyor).
     notificationPrefs: {
       dailyRitualReminder: { type: Boolean, default: true },
-      journeyReminder: { type: Boolean, default: true },
     },
     locale: { type: String, enum: ['en', 'tr'], default: 'en' },
     // Aynı soğuma döngüsü için hatırlatmanın birden fazla kez gönderilmesini
@@ -42,11 +41,6 @@ const userSchema = new mongoose.Schema(
     // için aynı mantığın ayrı bir bayrağı.
     lastCooldownReminderFor: { type: Number, default: null },
     lastReadyReminderFor: { type: Number, default: null },
-    // Yolculuk Hatırlatması (bkz. jobs/journeyReminder.js) - kişisel soğuma
-    // sayacından BAĞIMSIZ, her gün sabit saatte (Türkiye saatiyle) herkese
-    // giden ortak bildirim. Tarih (YYYY-MM-DD, Europe/Istanbul) olarak
-    // saklanıyor - aynı takvim gününde ikinci kez gönderilmesini önlüyor.
-    lastJourneyReminderSentDate: { type: String, default: null },
   },
   { timestamps: true }
 )

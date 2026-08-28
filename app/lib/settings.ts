@@ -10,7 +10,6 @@
 
 export type NotificationSettings = {
   dailyRitualReminder: boolean
-  journeyReminder: boolean
 }
 
 export type AppearanceSettings = {
@@ -29,7 +28,6 @@ const DEFAULT_SETTINGS: UserSettings = {
   language: 'en',
   notifications: {
     dailyRitualReminder: true,
-    journeyReminder: true,
   },
   appearance: {
     darkMode: true,

@@ -8,7 +8,6 @@ import type { TranslationKey } from '../../../lib/i18n'
 
 const ROWS: { key: keyof NotificationSettings; labelKey: TranslationKey }[] = [
   { key: 'dailyRitualReminder', labelKey: 'settings.notifications.dailyRitualReminder' },
-  { key: 'journeyReminder', labelKey: 'settings.notifications.journeyReminder' },
 ]
 
 export default function NotificationSettingsPage() {
