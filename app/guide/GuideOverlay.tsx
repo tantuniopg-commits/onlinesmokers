@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { FONT_SANS } from '../lib/typography'
+import { useLocale } from '../contexts/LocaleContext'
 import VelisGuide from './VelisGuide'
 import GuideDialogue from './GuideDialogue'
 
@@ -47,6 +48,7 @@ export default function GuideOverlay({
   onDialogueDone?: () => void
   onSkip: () => void
 }) {
+  const { t } = useLocale()
   const guideCentered = guidePlacement === 'center'
   // Rehber sayfada aniden belirmiyor - hem loş katman hem figür/diyalog
   // birlikte, yavaşça (bkz. spec: "yavaşça gözüksün") - ama SADECE turun
@@ -117,8 +119,9 @@ export default function GuideOverlay({
           onClick={onSkip}
           style={{
             position: 'fixed',
-            top: 'calc(18px + env(safe-area-inset-top))',
-            right: '20px',
+            top: 'calc(12px + env(safe-area-inset-top))',
+            right: 'calc(20px + env(safe-area-inset-right))',
+            padding: '8px 10px',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -129,7 +132,7 @@ export default function GuideOverlay({
             color: 'rgba(245, 240, 234, 0.6)',
           }}
         >
-          Skip
+          {t('guide.skip')}
         </button>
       )}
 

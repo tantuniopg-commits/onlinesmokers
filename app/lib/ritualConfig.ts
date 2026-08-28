@@ -6,13 +6,13 @@
 // gerek yok - Ritual ekranı zaten her ritüel başlangıcında bu servisten
 // taze bir değer okuyor).
 //
-// ÜRETİMDE bu servis HER ZAMAN PRODUCTION_RITUAL_DURATION_SEC (90 saniye)
+// ÜRETİMDE bu servis HER ZAMAN PRODUCTION_RITUAL_DURATION_SEC (30 saniye)
 // döndürür - localStorage'da ne olursa olsun hiçbir etkisi yok. Normal
 // kullanıcılar bu süreyi asla değiştiremez.
 
 import { isDev } from '../constants/env'
 
-export const PRODUCTION_RITUAL_DURATION_SEC = 90
+export const PRODUCTION_RITUAL_DURATION_SEC = 30
 export const MIN_RITUAL_DURATION_SEC = 1
 export const MAX_RITUAL_DURATION_SEC = 600
 

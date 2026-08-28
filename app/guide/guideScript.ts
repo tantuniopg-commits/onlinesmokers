@@ -66,7 +66,7 @@ const GUIDE_SCRIPT_EN: Record<GuideStepId, string[]> = {
   PROFILE: ['This is your personal space.', 'Your streak.', 'Your XP.', 'Your journey.'],
   RITUAL: [
     'This is your ritual.',
-    'Each ritual lasts 1 minute 30 seconds.',
+    'Each ritual lasts 30 seconds.',
     "Touch the Amber Core when you're ready.",
     'The object will activate in about 10 seconds.',
   ],
@@ -96,7 +96,7 @@ const GUIDE_SCRIPT_TR: Record<GuideStepId, string[]> = {
   PROFILE: ['Burası senin kişisel alanın.', 'Serin.', "XP'n.", 'Yolculuğun.'],
   RITUAL: [
     'Bu senin ritüelin.',
-    'Her ritüel 1 dakika 30 saniye sürer.',
+    'Her ritüel 30 saniye sürer.',
     "Hazır olduğunda Amber Çekirdek'e dokun.",
     'Nesne yaklaşık 10 saniye içinde etkinleşecek.',
   ],
