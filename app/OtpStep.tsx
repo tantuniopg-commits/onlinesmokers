@@ -59,7 +59,7 @@ export default function OtpStep({
   // geçildiğinde bu link tamamen kaldırılacak (bkz. isDev kontrolü).
   devSkip?: boolean
 }) {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [sent, setSent] = useState(() => {
     const existing = getOtpState(channel)
     return !!existing && existing.expiresAt > Date.now()
@@ -82,7 +82,7 @@ export default function OtpStep({
     setSending(true)
     setError(null)
     try {
-      await sendOtp(channel, destination)
+      await sendOtp(channel, destination, undefined, locale)
       setSent(true)
       setCode('')
       setResendMs(getResendRemainingMs(channel))

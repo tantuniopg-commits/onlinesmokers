@@ -8,13 +8,13 @@ export type SendOtpResult = { expiresAt: number; devCode?: string }
 
 export class OtpApiError extends Error {}
 
-export async function sendOtpRequest(channel: OtpChannel, destination: string, force?: boolean): Promise<SendOtpResult> {
+export async function sendOtpRequest(channel: OtpChannel, destination: string, force?: boolean, locale?: string): Promise<SendOtpResult> {
   let res: Response
   try {
     res = await fetch(`${apiBase()}/api/otp/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ channel, destination, force }),
+      body: JSON.stringify({ channel, destination, force, locale }),
     })
   } catch {
     throw new OtpApiError('Could not reach the server. Check your connection.')

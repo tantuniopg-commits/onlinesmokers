@@ -18,8 +18,8 @@ export { OtpApiError } from '../lib/otpApi'
 
 const RESEND_COOLDOWN_MS = 60 * 1000
 
-export async function sendOtp(channel: OtpChannel, destination: string, force?: boolean): Promise<OtpRecord> {
-  const result = await sendOtpRequest(channel, destination, force)
+export async function sendOtp(channel: OtpChannel, destination: string, force?: boolean, locale?: string): Promise<OtpRecord> {
+  const result = await sendOtpRequest(channel, destination, force, locale)
   const record: OtpRecord = {
     destination,
     generatedAt: Date.now(),

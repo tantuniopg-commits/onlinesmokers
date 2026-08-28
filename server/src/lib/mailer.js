@@ -89,17 +89,34 @@ function emailShell(headline, bodyHtml) {
   </div>`
 }
 
-function otpEmailHtml(code) {
+// Kayıt sırasındaki e-posta doğrulama kodu (bkz. controllers/otpController.js).
+// Kullanıcının o anki uygulama dili (locale) client tarafından istek gövdesinde
+// gönderiliyor (bkz. lib/otpApi.ts sendOtpRequest) - password reset ile aynı
+// desen, çünkü kullanıcı henüz giriş yapmamış olabiliyor.
+const VERIFICATION_COPY = {
+  en: {
+    subject: 'Your VELIS verification code',
+    intro: 'Your verification code is:',
+    footer: "This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.",
+  },
+  tr: {
+    subject: 'VELIS doğrulama kodun',
+    intro: 'Doğrulama kodun:',
+    footer: 'Bu kod 5 dakika içinde geçerliliğini yitirir. Bunu sen istemediysen bu e-postayı görmezden gelebilirsin.',
+  },
+}
+
+function otpEmailHtml(code, copy) {
   return emailShell(
     null,
-    `<p style="font-size:14px;color:#D2CCC5;margin:0 0 22px">Your verification code is:</p>
+    `<p style="font-size:14px;color:#D2CCC5;margin:0 0 22px">${copy.intro}</p>
     <div style="font-size:34px;font-weight:700;letter-spacing:8px;color:#E3C08C">${code}</div>
-    <p style="font-size:12px;color:#8F8A83;margin-top:26px;line-height:1.5">This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.</p>`
+    <p style="font-size:12px;color:#8F8A83;margin-top:26px;line-height:1.5">${copy.footer}</p>`
   )
 }
 
-function otpEmailText(code) {
-  return `Your VELIS verification code is: ${code}\n\nThis code expires in 5 minutes. If you didn't request this, you can safely ignore this email.`
+function otpEmailText(code, copy) {
+  return `${copy.intro} ${code}\n\n${copy.footer}`
 }
 
 // Sağlayıcı zincirini (Resend/SendGrid/SMTP/Ethereal) tek yerde uygulayan
@@ -126,8 +143,9 @@ async function sendEmail(to, subject, html, text) {
   console.log(`[mailer] No real provider configured (RESEND_API_KEY/SENDGRID_API_KEY/SMTP_HOST) - sent to Ethereal test inbox. Preview: ${nodemailer.getTestMessageUrl(info)}`)
 }
 
-async function sendVerificationEmail(to, code) {
-  await sendEmail(to, 'Your VELIS verification code', otpEmailHtml(code), otpEmailText(code))
+async function sendVerificationEmail(to, code, locale) {
+  const copy = VERIFICATION_COPY[locale] || VERIFICATION_COPY.en
+  await sendEmail(to, copy.subject, otpEmailHtml(code, copy), otpEmailText(code, copy))
 }
 
 // Hesap Ayarları > Şifreyi Değiştir sonrası bildirim maili (bkz.

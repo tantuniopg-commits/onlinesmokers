@@ -27,6 +27,7 @@ function simulatePhoneSend(destination, code) {
 
 async function sendOtp(req, res) {
   const { channel, destination: rawDestination, force } = req.body || {}
+  const locale = req.body?.locale === 'tr' ? 'tr' : 'en'
   if (channel !== 'phone' && channel !== 'email') {
     return res.status(400).json({ error: 'Invalid channel' })
   }
@@ -52,7 +53,7 @@ async function sendOtp(req, res) {
 
   try {
     if (channel === 'email') {
-      await sendVerificationEmail(destination, code)
+      await sendVerificationEmail(destination, code, locale)
     } else if (isTwilioConfigured()) {
       await sendVerificationSms(destination, code)
     } else {
