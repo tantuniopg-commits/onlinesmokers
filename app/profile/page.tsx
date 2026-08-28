@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, ClipboardEvent, KeyboardEvent, ReactNode, RefObject } from 'react'
+import type { ChangeEvent, KeyboardEvent, ReactNode, RefObject } from 'react'
 import VelisMark from '../VelisMark'
 import { getStoredStats, saveStats, getStoredToken } from '../lib/auth'
 import type { VelisUser, VelisStats } from '../lib/auth'
 import { getStoredSettings } from '../lib/settings'
 import { getStoredUser, validateSignupForm, createAccount, saveToken, getPasswordRuleStatus } from '../services/AuthService'
 import type { PasswordRuleId } from '../services/AuthService'
-import { registerRequest, loginRequest, AuthApiError, checkEmailAvailableRequest, checkPhoneAvailableRequest, updatePreferencesRequest } from '../lib/authApi'
+import { registerRequest, loginRequest, AuthApiError, checkEmailAvailableRequest, updatePreferencesRequest } from '../lib/authApi'
 import { getTodayIndexMondayFirst } from '../services/TimeService'
 import { useAppNav } from '../contexts/AppNavContext'
 import { getAppState, setAppState } from '../services/AppStateManager'
@@ -21,6 +21,7 @@ import LegalReader from '../LegalReader'
 import OtpStep from '../OtpStep'
 import ForgotPasswordFlow from '../ForgotPasswordFlow'
 import DevPanel from '../devpanel/DevPanel'
+import DateWheelField from '../DateWheelField'
 import { useRouter } from 'next/navigation'
 import { FONT_SANS } from '../lib/typography'
 import { isDev } from '../constants/env'
@@ -46,7 +47,7 @@ const DEV_TAP_RESET_MS = 2000
 // uygulamanın geri kalanındaki geçiş dilinin aynısı.
 
 
-type Phase = 'create' | 'legal' | 'confirmPhone' | 'confirmEmail' | 'success' | 'profile'
+type Phase = 'create' | 'legal' | 'confirmEmail' | 'success' | 'profile'
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -293,7 +294,9 @@ function FieldInput({
 }
 
 // FieldInput ile AYNI görsel kabuk (label/border/hata) - sadece native
-// <select> için (Gender). Aynı kabuk, aynı odak/hata renkleri.
+// Seçim alanı (Gender). Yerli <select> yerine VELIS temalı bir bottom-sheet
+// açıyor - iOS'un beyaz/sistem picker'ı koyu premium arayüzde yamalı
+// duruyordu ("Almost Done" sheet'iyle aynı görsel dil, bkz. aşağısı).
 function SelectField({
   label,
   value,
@@ -301,61 +304,61 @@ function SelectField({
   onBlur,
   options,
   placeholder,
-  selectRef,
+  triggerRef,
   error,
 }: {
   label: string
   value: string
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void
+  onChange: (value: string) => void
   onBlur: () => void
-  options: string[]
+  options: { value: string; label: string }[]
   placeholder: string
-  selectRef?: RefObject<HTMLSelectElement | null>
+  triggerRef?: RefObject<HTMLButtonElement | null>
   error?: string | null
 }) {
-  const [focused, setFocused] = useState(false)
+  const [open, setOpen] = useState(false)
+  const selectedLabel = options.find((o) => o.value === value)?.label
+
+  const close = () => {
+    setOpen(false)
+    onBlur()
+  }
 
   return (
     <div style={{ width: '100%' }}>
       <label style={{ display: 'block', fontFamily: FONT_SANS, fontWeight: 500, fontSize: '12px', color: '#9A948C', marginBottom: '8px' }}>
         {label}
       </label>
-      <select
-        ref={selectRef}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false)
-          onBlur()
-        }}
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen(true)}
         style={{
           width: '100%',
           boxSizing: 'border-box',
           padding: '13px 16px',
           borderRadius: '14px',
-          border: error ? '1px solid rgba(255, 130, 100, 0.5)' : focused ? '1px solid rgba(255, 178, 90, 0.55)' : '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: focused && !error ? '0 0 0 3px rgba(255, 178, 90, 0.1)' : 'none',
+          border: error ? '1px solid rgba(255, 130, 100, 0.5)' : open ? '1px solid rgba(255, 178, 90, 0.55)' : '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: open && !error ? '0 0 0 3px rgba(255, 178, 90, 0.1)' : 'none',
           background: 'rgba(255, 255, 255, 0.03)',
-          color: value ? '#F5F0EA' : 'rgba(245, 240, 234, 0.4)',
+          color: selectedLabel ? '#F5F0EA' : 'rgba(245, 240, 234, 0.4)',
           fontFamily: FONT_SANS,
           fontWeight: 400,
           fontSize: '16px',
-          outline: 'none',
-          appearance: 'none',
-          WebkitAppearance: 'none',
+          textAlign: 'left',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
           transition: 'border 200ms ease-out, box-shadow 200ms ease-out',
         }}
       >
-        <option value="" disabled>
-          {placeholder}
-        </option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedLabel ?? placeholder}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <path d="M6 9L12 15L18 9" stroke="#9A948C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
       <div
         style={{
           marginTop: error ? '6px' : 0,
@@ -367,6 +370,93 @@ function SelectField({
       >
         <div style={{ fontFamily: FONT_SANS, fontSize: '12px', color: 'rgba(255, 150, 120, 0.85)' }}>{error}</div>
       </div>
+
+      {open && (
+        <div
+          onClick={close}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 70,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.55)',
+          }}
+        >
+          <div
+            className="velis-sheet--slide-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              background: '#0B0B0B',
+              borderTopLeftRadius: '28px',
+              borderTopRightRadius: '28px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderBottom: 'none',
+              boxShadow: '0 -20px 60px rgba(0, 0, 0, 0.5)',
+              padding: '10px 14px calc(18px + env(safe-area-inset-bottom))',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+            }}
+          >
+            <div style={{ width: '36px', height: '5px', borderRadius: '999px', background: 'rgba(255, 255, 255, 0.2)', margin: '8px auto 14px' }} />
+            <div
+              style={{
+                fontFamily: FONT_SANS,
+                fontWeight: 600,
+                fontSize: '12px',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                color: '#9A948C',
+                textAlign: 'center',
+                padding: '0 8px 8px',
+              }}
+            >
+              {label}
+            </div>
+            {options.map((opt) => {
+              const isSel = opt.value === value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value)
+                    close()
+                  }}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '15px 14px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: isSel ? 'rgba(255, 178, 90, 0.1)' : 'transparent',
+                    color: isSel ? '#F3CE8E' : '#F5F0EA',
+                    fontFamily: FONT_SANS,
+                    fontWeight: isSel ? 600 : 400,
+                    fontSize: '16px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {opt.label}
+                  {isSel && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13L9 17L19 7" stroke="#F3CE8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -379,25 +469,6 @@ function formatDuration(sec: number) {
 }
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-
-// Telefon alanı için ülke kodu seçenekleri - Türkiye varsayılan, ardından
-// Avrupa/Amerika/Uzak Doğu'dan en yaygın ülkeler.
-const PHONE_COUNTRY_CODES = [
-  { code: '+90', country: 'Turkey' },
-  { code: '+1', country: 'United States' },
-  { code: '+44', country: 'United Kingdom' },
-  { code: '+49', country: 'Germany' },
-  { code: '+33', country: 'France' },
-  { code: '+34', country: 'Spain' },
-  { code: '+39', country: 'Italy' },
-  { code: '+31', country: 'Netherlands' },
-  { code: '+7', country: 'Russia' },
-  { code: '+86', country: 'China' },
-  { code: '+81', country: 'Japan' },
-  { code: '+82', country: 'South Korea' },
-  { code: '+91', country: 'India' },
-  { code: '+971', country: 'United Arab Emirates' },
-]
 
 // "Almost Done" bottom sheet'indeki durum kartı - WhoAreYouScreen'deki
 // ChoiceCard ile aynı görsel dil (amber halka + ikon), sheet bağlamına göre
@@ -477,23 +548,16 @@ export default function Profile() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [countryCode, setCountryCode] = useState('+90')
-  // Telefon numarası 10 ayrı haneli kutucuk olarak giriliyor - sadece rakam,
-  // asla 10'dan fazla/az kabul edilmiyor (bkz. aşağıdaki handlePhoneDigit*).
-  const [phoneDigits, setPhoneDigits] = useState<string[]>(() => Array(10).fill(''))
-  const phone = phoneDigits.join('')
   const [gender, setGender] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
-  // Email/telefon alanından çıkılınca (blur) sunucuya sorulan erken "zaten
-  // kayıtlı mı" kontrolü (bkz. lib/authApi.ts checkEmailAvailableRequest/
-  // checkPhoneAvailableRequest) - kullanıcı bütün formu + OTP adımlarını
-  // doldurup EN SONDA bu hatayı almasın diye. Değer değişince (onChange)
-  // hemen sıfırlanıyor - eski "taken" durumu yeni girilen değere yapışmasın.
+  // Email alanından çıkılınca (blur) sunucuya sorulan erken "zaten kayıtlı mı"
+  // kontrolü (bkz. lib/authApi.ts checkEmailAvailableRequest) - kullanıcı bütün
+  // formu + OTP adımlarını doldurup EN SONDA bu hatayı almasın diye. Değer
+  // değişince (onChange) hemen sıfırlanıyor - eski "taken" durumu yapışmasın.
   const [emailTaken, setEmailTaken] = useState(false)
-  const [phoneTaken, setPhoneTaken] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [showStatusSheet, setShowStatusSheet] = useState(false)
   const [sheetSelection, setSheetSelection] = useState<UserType | null>(null)
@@ -505,9 +569,8 @@ export default function Profile() {
 
   const lastNameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
-  const phoneDigitRefs = useRef<(HTMLInputElement | null)[]>([])
-  const genderRef = useRef<HTMLSelectElement>(null)
-  const birthDateRef = useRef<HTMLInputElement>(null)
+  const genderRef = useRef<HTMLButtonElement>(null)
+  const birthDateRef = useRef<HTMLButtonElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -549,11 +612,10 @@ export default function Profile() {
     return () => cancelAnimationFrame(raf)
   }, [displayPhase])
 
-  const { firstNameValid, lastNameValid, emailValid, phoneValid, genderValid, birthDateValid, passwordValid, formValid } = validateSignupForm({
+  const { firstNameValid, lastNameValid, emailValid, genderValid, birthDateValid, passwordValid, formValid } = validateSignupForm({
     firstName,
     lastName,
     email,
-    phone,
     gender,
     birthDate,
     password,
@@ -564,7 +626,7 @@ export default function Profile() {
   // oluşturulmuş olabilir, gerçek doğrulama zaten sunucuda (bkz.
   // loginRequest) yapılıyor.
   const signinValid = emailValid && password.length > 0
-  const submitEnabled = mode === 'create' ? formValid && !emailTaken && !phoneTaken : signinValid
+  const submitEnabled = mode === 'create' ? formValid && !emailTaken : signinValid
 
   const finishAuth = (newUser: VelisUser) => {
     setUser(newUser)
@@ -595,9 +657,9 @@ export default function Profile() {
   const [submitting, setSubmitting] = useState(false)
 
   // Create Account artık hesabı hemen oluşturmuyor - önce "Almost Done" bottom
-  // sheet'i, sonra Legal Agreement, sonra Phone/Email OTP doğrulaması geliyor
-  // (bkz. handleConfirmStatus, handlePhoneVerified, handleEmailVerified).
-  // Form burada zaten doğrulanmış durumda.
+  // sheet'i, sonra Legal Agreement, sonra e-posta OTP doğrulaması geliyor
+  // (bkz. handleConfirmStatus, handleEmailVerified). Form burada zaten
+  // doğrulanmış durumda.
   const handleContinueToConfirm = () => {
     if (!formValid || submitting) return
     setAuthError(null)
@@ -624,21 +686,10 @@ export default function Profile() {
     setOpenedDocument(null)
   }
 
-  // Telefon OTP adımı GEÇİCİ OLARAK devre dışı (bkz. talep) - sadece e-posta
-  // doğrulaması kalıyor. Telefon numarası formda hâlâ toplanıp kaydediliyor,
-  // sadece ayrı bir doğrulama ekranı atlanıyor. Geri açmak için burayı
-  // `setPhase('confirmPhone')` yap (bkz. displayPhase === 'confirmPhone'
-  // bloğu, hâlâ aşağıda duruyor, silinmedi).
+  // Hesap oluşturmada telefon numarası HİÇ sorulmuyor (bkz. talep) - Legal
+  // onayından sonra doğrudan e-posta OTP doğrulamasına geçiliyor.
   const handleContinueFromLegal = () => {
     if (!bothDocsOpened || !agreeChecked) return
-    setPhase('confirmEmail')
-  }
-
-  const fullPhoneNumber = `${countryCode} ${phoneDigits.join('')}`.trim()
-
-  // Phone OTP doğrulanınca hesap HENÜZ oluşturulmuyor - sıradaki adım Email
-  // doğrulaması (bkz. testing flow: Register -> Phone -> Email -> Home).
-  const handlePhoneVerified = () => {
     setPhase('confirmEmail')
   }
 
@@ -653,7 +704,7 @@ export default function Profile() {
         `${firstName.trim()} ${lastName.trim()}`.trim(),
         email.trim(),
         password,
-        fullPhoneNumber,
+        undefined,
         getStoredStats(),
         locale
       )
@@ -718,48 +769,6 @@ export default function Profile() {
     }
   }
 
-  const checkPhoneAvailability = async () => {
-    if (!phoneValid) return
-    try {
-      const res = await checkPhoneAvailableRequest(fullPhoneNumber)
-      setPhoneTaken(!res.available)
-    } catch {
-      // no-op
-    }
-  }
-
-  // 10 haneli telefon kutucukları - sadece rakam kabul ediyor, dolunca
-  // otomatik bir sonraki kutuya geçiyor, boşken Backspace önceki kutuya
-  // dönüyor. Yapısal olarak 10'dan fazla haneye ASLA çıkamıyor (tam 10 kutu).
-  const handlePhoneDigitChange = (index: number, raw: string) => {
-    const digit = raw.replace(/\D/g, '').slice(-1)
-    setPhoneDigits((prev) => {
-      const next = [...prev]
-      next[index] = digit
-      return next
-    })
-    setPhoneTaken(false)
-    if (digit && index < 9) phoneDigitRefs.current[index + 1]?.focus()
-  }
-
-  const handlePhoneDigitKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !phoneDigits[index] && index > 0) {
-      e.preventDefault()
-      phoneDigitRefs.current[index - 1]?.focus()
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (index === 9) genderRef.current?.focus()
-    }
-  }
-
-  const handlePhoneDigitPaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 10).split('')
-    if (digits.length === 0) return
-    e.preventDefault()
-    setPhoneDigits(Array.from({ length: 10 }, (_, i) => digits[i] || ''))
-    phoneDigitRefs.current[Math.min(digits.length, 10) - 1]?.focus()
-  }
-
   if (phase === null || displayPhase === null) {
     return <main style={{ minHeight: '100vh', background: '#050505' }} />
   }
@@ -796,6 +805,7 @@ export default function Profile() {
             style={{
               flex: 1,
               overflowY: 'auto',
+              overscrollBehavior: 'contain',
               WebkitOverflowScrolling: 'touch',
               display: 'flex',
               flexDirection: 'column',
@@ -875,7 +885,7 @@ export default function Profile() {
               onKeyDown={(e) => {
                 if (e.key !== 'Enter') return
                 e.preventDefault()
-                if (mode === 'create') phoneDigitRefs.current[0]?.focus()
+                if (mode === 'create') genderRef.current?.focus()
                 else passwordRef.current?.focus()
               }}
               type="email"
@@ -893,141 +903,28 @@ export default function Profile() {
             />
             {mode === 'create' && (
               <>
-                <div style={{ width: '100%' }}>
-                  <label style={{ display: 'block', fontFamily: FONT_SANS, fontWeight: 500, fontSize: '12px', color: '#9A948C', marginBottom: '8px' }}>
-                    {t('profile.field.phone')}
-                  </label>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      boxSizing: 'border-box',
-                      width: '100%',
-                      padding: '4px 16px 4px 4px',
-                      borderRadius: '14px',
-                      border: touched.phone && !phoneValid ? '1px solid rgba(255, 130, 100, 0.5)' : '1px solid rgba(255, 255, 255, 0.12)',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      transition: 'border 200ms ease-out',
-                    }}
-                  >
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      aria-label="Country code"
-                      style={{
-                        flexShrink: 0,
-                        width: '84px',
-                        boxSizing: 'border-box',
-                        padding: '9px 6px',
-                        borderRadius: '10px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: '#F5F0EA',
-                        fontFamily: FONT_SANS,
-                        fontWeight: 400,
-                        fontSize: '14px',
-                        outline: 'none',
-                      }}
-                    >
-                      {PHONE_COUNTRY_CODES.map((c) => (
-                        <option key={c.code + c.country} value={c.code}>
-                          {c.code} {c.country}
-                        </option>
-                      ))}
-                    </select>
-                    <div style={{ width: '1px', alignSelf: 'stretch', margin: '10px 0', background: 'rgba(255, 255, 255, 0.1)' }} />
-                    {/* Kutu yerine çizgi - her hane kendi alt çizgisinin üstünde,
-                        gruplar arasında (3-3-2-2) biraz daha geniş boşluk. */}
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '3px' }}>
-                      {[3, 3, 2, 2].reduce<ReactNode[]>((acc, groupSize, groupIndex, groups) => {
-                        const start = groups.slice(0, groupIndex).reduce((s, n) => s + n, 0)
-                        acc.push(
-                          <div key={groupIndex} style={{ display: 'flex', gap: '3px', marginRight: groupIndex < groups.length - 1 ? '10px' : 0 }}>
-                            {Array.from({ length: groupSize }, (_, j) => {
-                              const i = start + j
-                              return (
-                                <input
-                                  key={i}
-                                  ref={(el) => {
-                                    phoneDigitRefs.current[i] = el
-                                  }}
-                                  type="text"
-                                  inputMode="numeric"
-                                  pattern="[0-9]*"
-                                  maxLength={1}
-                                  value={phoneDigits[i]}
-                                  onChange={(e) => handlePhoneDigitChange(i, e.target.value)}
-                                  onKeyDown={(e) => handlePhoneDigitKeyDown(i, e)}
-                                  onPaste={handlePhoneDigitPaste}
-                                  onBlur={() => {
-                                    markTouched('phone')
-                                    checkPhoneAvailability()
-                                  }}
-                                  style={{
-                                    width: '18px',
-                                    boxSizing: 'border-box',
-                                    textAlign: 'center',
-                                    padding: '13px 0 8px',
-                                    border: 'none',
-                                    borderBottom:
-                                      touched.phone && !phoneValid
-                                        ? '1.5px solid rgba(255, 130, 100, 0.6)'
-                                        : phoneDigits[i]
-                                        ? '1.5px solid rgba(255, 178, 90, 0.6)'
-                                        : '1.5px solid rgba(255, 255, 255, 0.25)',
-                                    borderRadius: 0,
-                                    background: 'transparent',
-                                    color: '#F5F0EA',
-                                    fontFamily: FONT_SANS,
-                                    fontWeight: 600,
-                                    fontSize: '17px',
-                                    outline: 'none',
-                                    transition: 'border-color 200ms ease-out',
-                                  }}
-                                />
-                              )
-                            })}
-                          </div>
-                        )
-                        return acc
-                      }, [])}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      marginTop: touched.phone && (!phoneValid || phoneTaken) ? '6px' : 0,
-                      maxHeight: touched.phone && (!phoneValid || phoneTaken) ? '20px' : 0,
-                      overflow: 'hidden',
-                      opacity: touched.phone && (!phoneValid || phoneTaken) ? 1 : 0,
-                      transition: 'opacity 250ms ease-in-out, max-height 250ms ease-in-out, margin-top 250ms ease-in-out',
-                    }}
-                  >
-                    <div style={{ fontFamily: FONT_SANS, fontSize: '12px', color: 'rgba(255, 150, 120, 0.85)' }}>
-                      {!phoneValid ? t('profile.error.phone') : t('profile.error.phoneTaken')}
-                    </div>
-                  </div>
-                </div>
                 <SelectField
                   label={t('profile.field.gender')}
                   value={gender}
-                  onChange={(e) => setGender(e.target.value)}
+                  onChange={(v) => setGender(v)}
                   onBlur={() => markTouched('gender')}
-                  options={['Female', 'Male', 'Other', 'Prefer not to say']}
+                  options={[
+                    { value: 'Female', label: t('profile.gender.female') },
+                    { value: 'Male', label: t('profile.gender.male') },
+                    { value: 'Other', label: t('profile.gender.other') },
+                    { value: 'Prefer not to say', label: t('profile.gender.preferNotToSay') },
+                  ]}
                   placeholder={t('profile.field.genderPlaceholder')}
-                  selectRef={genderRef}
+                  triggerRef={genderRef}
                   error={touched.gender && !genderValid ? t('profile.error.gender') : null}
                 />
-                <FieldInput
+                <DateWheelField
                   label={t('profile.field.birthDate')}
                   value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
+                  onChange={(v) => setBirthDate(v)}
                   onBlur={() => markTouched('birthDate')}
-                  onKeyDown={(e) => advance(e, passwordRef)}
-                  type="date"
-                  enterKeyHint="next"
-                  autoComplete="bday"
-                  inputRef={birthDateRef}
+                  placeholder={t('profile.field.birthDatePlaceholder')}
+                  triggerRef={birthDateRef}
                   error={touched.birthDate && !birthDateValid ? t('profile.error.birthDate') : null}
                 />
               </>
@@ -1268,18 +1165,6 @@ export default function Profile() {
           onProgress={setReadProgress}
           onBack={() => setOpenedDocument(null)}
           onUnderstand={() => handleMarkReviewed(openedDocument)}
-        />
-      )}
-
-      {displayPhase === 'confirmPhone' && (
-        <OtpStep
-          channel="phone"
-          destination={fullPhoneNumber}
-          title={t('otp.phone.title')}
-          onVerified={handlePhoneVerified}
-          backLabel={t('otp.editDetails')}
-          onBack={() => setPhase('create')}
-          devSkip
         />
       )}
 

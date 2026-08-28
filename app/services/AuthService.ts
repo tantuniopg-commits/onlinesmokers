@@ -8,6 +8,8 @@ import { clearStats, clearToken, getStoredToken } from '../lib/auth'
 import type { VelisUser } from '../lib/auth'
 import { userRepository } from '../repositories'
 import { setAppState } from './AppStateManager'
+import { clearWelcomeSeen, clearUserType } from '../lib/onboarding'
+import { clearGuideCompleted } from '../lib/guide'
 import { updateProfileRequest, changePasswordRequest, deleteAccountRequest } from '../lib/authApi'
 
 export * from '../lib/auth'
@@ -34,7 +36,6 @@ export type SignupFormInput = {
   firstName: string
   lastName: string
   email: string
-  phone: string
   gender: string
   birthDate: string
   password: string
@@ -43,7 +44,6 @@ export type SignupFormValidity = {
   firstNameValid: boolean
   lastNameValid: boolean
   emailValid: boolean
-  phoneValid: boolean
   genderValid: boolean
   birthDateValid: boolean
   passwordValid: boolean
@@ -77,9 +77,6 @@ export function validateSignupForm(input: SignupFormInput): SignupFormValidity {
   const firstNameValid = input.firstName.trim().length > 0
   const lastNameValid = input.lastName.trim().length > 0
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())
-  // Telefon artık 10 ayrı rakam kutucuğundan geliyor (bkz. profile/page.tsx) -
-  // sadece rakam, tam 10 hane.
-  const phoneValid = /^\d{10}$/.test(input.phone)
   const genderValid = input.gender.trim().length > 0
   const birthDateValid = /^\d{4}-\d{2}-\d{2}$/.test(input.birthDate) && new Date(input.birthDate) < new Date()
   const passwordValid = isPasswordValid(input.password)
@@ -87,11 +84,10 @@ export function validateSignupForm(input: SignupFormInput): SignupFormValidity {
     firstNameValid,
     lastNameValid,
     emailValid,
-    phoneValid,
     genderValid,
     birthDateValid,
     passwordValid,
-    formValid: firstNameValid && lastNameValid && emailValid && phoneValid && genderValid && birthDateValid && passwordValid,
+    formValid: firstNameValid && lastNameValid && emailValid && genderValid && birthDateValid && passwordValid,
   }
 }
 
@@ -176,6 +172,18 @@ export async function deleteAccount(): Promise<void> {
   clearUser()
   clearStats()
   clearToken()
-  // Ne hesap ne ilerleme kaldı - FIRST_LAUNCH'a eşdeğer.
+  // Ne hesap ne ilerleme kaldı - kullanıcı GERÇEKTEN ilk açılışa dönmeli
+  // (VELIS Guide turu dahil). devJumpToState('FIRST_LAUNCH') ile aynı temizlik:
+  // onboarding/kullanıcı-tipi/guide bayrakları + intro splash bayrağı da
+  // sıfırlanıyor, yoksa /profile'a düşüp turu bir daha görmüyordu.
+  clearWelcomeSeen()
+  clearUserType()
+  clearGuideCompleted()
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.removeItem('velis_intro_played')
+    // Alınan ödül günleri guard'ı (bkz. lib/journey.ts) - yeni bir hesapta
+    // ödüller tekrar alınabilmeli.
+    window.localStorage.removeItem('velis_claimed_rewards')
+  }
   setAppState('FIRST_LAUNCH')
 }

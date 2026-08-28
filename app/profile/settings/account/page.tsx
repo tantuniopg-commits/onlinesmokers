@@ -236,8 +236,10 @@ export default function AccountSettings() {
     if (deleting) return
     setDeleting(true)
     await deleteAccountService()
-    refreshAppState()
-    router.push('/profile')
+    // Sert yenilemeyle '/'ye - client-side router.push ile gidilirse ağaçta
+    // eski React state'i (ve intro/guide "görüldü" işaretleri) hayatta kalıp
+    // ilk-açılış turu tekrar oynamıyordu. Bkz. AuthService.deleteAccount.
+    if (typeof window !== 'undefined') window.location.href = '/'
   }
 
   return (

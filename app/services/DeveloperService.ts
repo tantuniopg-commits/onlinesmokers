@@ -40,6 +40,12 @@ export function factoryReset(): void {
   clearAllOverrides()
   resetDevTime()
   setDevCooldownOverrideMs(null)
+  // Alınan ödül günleri guard'ı (bkz. lib/journey.ts claimRewardXP).
+  try {
+    window.localStorage.removeItem('velis_claimed_rewards')
+  } catch {
+    // yoksay
+  }
   window.location.href = '/'
 }
 
