@@ -32,6 +32,50 @@ function syncStatsToServer(stats: VelisStats) {
 
 export const XP_PER_RITUAL = 10
 export const JOURNEY_COOLDOWN_MS = 24 * 60 * 60 * 1000
+
+// Ödül günü (7, 14, 21...) - kullanıcı o gün "Ödülünü al"a bastığında tek
+// seferlik kazandığı XP. Eskiden ortaklık kampanyası (ücretsiz kahve) vardı,
+// artık sadece +500 XP.
+export const REWARD_XP = 500
+
+// Alınan ödül günleri - hesabın/istatistiğin bir parçası DEĞİL (sunucu
+// modelini değiştirmemek için), sadece bu cihazda "aynı ödül iki kez
+// alınmasın" guard'ı. XP'nin kendisi zaten stats üzerinden sunucuya
+// sync ediliyor (bkz. syncStatsToServer).
+const CLAIMED_REWARDS_KEY = 'velis_claimed_rewards'
+
+function getClaimedRewardDays(): number[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(CLAIMED_REWARDS_KEY)
+    const arr = raw ? JSON.parse(raw) : []
+    return Array.isArray(arr) ? arr.filter((n): n is number => typeof n === 'number') : []
+  } catch {
+    return []
+  }
+}
+
+export function isRewardClaimed(day: number): boolean {
+  return getClaimedRewardDays().includes(day)
+}
+
+// Ödül ekranındaki "Ödülünü al" - tek seferlik +500 XP. Aynı gün ikinci kez
+// çağrılırsa hiçbir şey yapmıyor (idempotent), alreadyClaimed=true döner.
+export function claimRewardXP(day: number): { stats: VelisStats; alreadyClaimed: boolean } {
+  const current = getStoredStats()
+  if (isRewardClaimed(day)) return { stats: current, alreadyClaimed: true }
+  const next: VelisStats = { ...current, totalXP: current.totalXP + REWARD_XP }
+  saveStats(next)
+  syncStatsToServer(next)
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(CLAIMED_REWARDS_KEY, JSON.stringify([...getClaimedRewardDays(), day]))
+    } catch {
+      // yoksay - guard best-effort, XP yine de yazıldı
+    }
+  }
+  return { stats: next, alreadyClaimed: false }
+}
 // Ritüel süresi artık lib/ritualConfig.ts'teki merkezi yapılandırma
 // servisinden geliyor (getRitualDurationSec()) - burada sabitlenmiyor,
 // böylece Developer Panel'in "Ritual Configuration" bölümü değeri

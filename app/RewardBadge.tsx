@@ -1,9 +1,10 @@
 'use client'
 
-// Gün 7 (ve 7'nin her katı) ödül ortaklığı rozeti - VELIS amber temasına
-// uygun, çerçeveli hediye ikonu (bkz. app/journey/page.tsx DayCard,
-// app/reward/page.tsx).
-export default function CoffeePartnerBadge({ size = 28 }: { size?: number }) {
+// Gün 7 (ve 7'nin her katı) ödül rozeti - VELIS amber temasına uygun,
+// çerçeveli hediye ikonu (bkz. app/journey/page.tsx DayCard,
+// app/reward/page.tsx). Ödül artık tek seferlik +500 XP - herhangi bir
+// ortaklık/marka yok.
+export default function RewardBadge({ size = 28 }: { size?: number }) {
   return (
     <div
       style={{

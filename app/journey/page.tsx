@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import VelisMark from '../VelisMark'
-import CoffeePartnerBadge from '../CoffeePartnerBadge'
+import RewardBadge from '../RewardBadge'
 import { getStoredStats } from '../lib/auth'
 import { getCooldownRemainingMs, formatCooldown, canViewJourneyDay, TOTAL_JOURNEY_DAYS, CHAPTER_LENGTH } from '../services/JourneyService'
 import { FONT_SANS } from '../lib/typography'
@@ -178,7 +178,7 @@ function DayCard({
               cursor: 'pointer',
             }}
           >
-            <CoffeePartnerBadge size={34} />
+            <RewardBadge size={34} />
           </div>
         )}
         {active ? (
