@@ -5,8 +5,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // modunda `output: 'export'` ile üretiliyor) - normal `npm run dev`/`build`
 // buna hiç dokunmuyor, web dağıtımı bundan bağımsız çalışmaya devam ediyor.
 const config: CapacitorConfig = {
+  // appId (bundle identifier) kullanıcıya GÖRÜNMÜYOR - değiştirmek App
+  // Store'da yeni bir uygulama + yeni provisioning demek, o yüzden aynı
+  // kalıyor. Kullanıcının gördüğü isim CFBundleDisplayName (Info.plist).
   appId: 'com.forsvelis.app',
-  appName: 'Forsvelis',
+  appName: 'Velis',
   webDir: 'out',
 };
 
