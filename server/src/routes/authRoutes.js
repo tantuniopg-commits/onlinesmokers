@@ -1,5 +1,6 @@
 const express = require('express')
 const requireAuth = require('../middleware/auth')
+const requireAdmin = require('../middleware/requireAdmin')
 const {
   register,
   login,
@@ -34,8 +35,8 @@ router.post('/reset-password', asyncHandler(resetPassword))
 router.get('/leaderboard', asyncHandler(leaderboard))
 router.get('/check-email', asyncHandler(checkEmail))
 router.get('/check-phone', asyncHandler(checkPhone))
-// Dev-only kullanım için (bkz. Developer Panel) - üretimde bu uygulama asla
-// dağıtılmıyor, bu yüzden ekstra bir admin-auth katmanı şimdilik yok.
-router.get('/users', asyncHandler(listUsers))
+// Admin panelindeki kayıtlı hesaplar görünümü - SADECE admin e-postalarıyla
+// (bkz. middleware/requireAdmin.js, lib/admins.js).
+router.get('/users', requireAdmin, asyncHandler(listUsers))
 
 module.exports = router

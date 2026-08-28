@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { sendPasswordChangedEmail, sendWelcomeEmail } = require('../lib/mailer')
+const { isAdminEmail } = require('../lib/admins')
 
 const STATS_FIELDS = ['journeyDay', 'currentStreak', 'journeyTimestamp', 'totalXP', 'totalRitualCount', 'totalRitualTimeSec']
 
@@ -25,7 +26,14 @@ function signToken(userId) {
 }
 
 function toPublicUser(user) {
-  return { id: user._id, name: user.name, email: user.email, phone: user.phone, stats: user.stats }
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    stats: user.stats,
+    isAdmin: isAdminEmail(user.email),
+  }
 }
 
 function pickStats(input) {
@@ -38,7 +46,7 @@ function pickStats(input) {
 }
 
 async function register(req, res) {
-  const { name, email, password, phone, stats, locale } = req.body || {}
+  const { name, email, password, phone, stats, locale, gender, birthDate } = req.body || {}
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email and password are required' })
   }
@@ -64,6 +72,8 @@ async function register(req, res) {
     name,
     email,
     phone: phone || undefined,
+    gender: typeof gender === 'string' && gender.trim() ? gender.trim() : undefined,
+    birthDate: typeof birthDate === 'string' && birthDate.trim() ? birthDate.trim() : undefined,
     passwordHash,
     stats: pickStats(stats),
     locale: resolvedLocale,
@@ -210,14 +220,26 @@ async function leaderboard(req, res) {
   res.json({ users: users.map((u) => ({ id: u._id, name: u.name, stats: u.stats })) })
 }
 
-// SADECE Developer Panel'in "kayıtlı hesaplar" görünümü için (bkz.
-// devpanel/sections/UserDatabase.tsx) - gerçek/kalıcı depolamada NELERİN
-// saklandığını doğrulanabilir kılmak amacıyla. Şifre hash'i dahi HİÇBİR
-// ZAMAN dönmüyor - passwordHash bilerek projeksiyondan dışlanıyor.
+// SADECE admin panelindeki "kayıtlı hesaplar" görünümü için (bkz.
+// devpanel/sections/UserDatabase.tsx). requireAdmin ile korunuyor - route'a
+// bakınız. passwordHash HİÇBİR ZAMAN dönmüyor (projeksiyona dahil değil).
 async function listUsers(req, res) {
-  const users = await User.find({}, 'name email stats createdAt').sort({ createdAt: -1 }).lean()
+  const users = await User.find({}, 'name email phone gender birthDate locale stats createdAt')
+    .sort({ createdAt: -1 })
+    .lean()
   res.json({
-    users: users.map((u) => ({ id: u._id, name: u.name, email: u.email, stats: u.stats, createdAt: u.createdAt })),
+    users: users.map((u) => ({
+      id: u._id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone || null,
+      gender: u.gender || null,
+      birthDate: u.birthDate || null,
+      locale: u.locale || 'en',
+      isAdmin: isAdminEmail(u.email),
+      stats: u.stats || {},
+      createdAt: u.createdAt,
+    })),
   })
 }
 

@@ -5,30 +5,43 @@ import SectionCard from '../SectionCard'
 import { buttonStyle, colors, SANS, SANS_DISPLAY } from '../styles'
 import { getUsersRequest } from '../../lib/authApi'
 import type { AuthApiStoredUser } from '../../lib/authApi'
+import { getStoredToken } from '../../lib/auth'
 
-// Gerçek/kalıcı depolamada (bkz. server/src/config/db.js - artık diske
-// kalıcı yazan bir MongoDB) NELERİN saklandığını doğrudan görebilmek için -
-// backend'e her kayıt olan/giriş yapan kullanıcı burada listeleniyor. Şifre
-// backend'den zaten hiç dönmüyor (bkz. authController.js listUsers) - burada
-// da gösterilmiyor, sadece hesabın var olduğu doğrulanabiliyor.
+// Backend'e kayıtlı HER hesabın, kayıt sırasında girdiği bilgiler + canlı
+// ilerleme (journey day / streak / XP ...). Sunucuda requireAdmin ile
+// korunuyor - sadece admin token'ıyla çekilebiliyor. Şifre hiç dönmüyor.
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+      <span style={{ fontFamily: SANS, fontSize: '11px', color: colors.muted }}>{label}</span>
+      <span style={{ fontFamily: SANS, fontSize: '11px', color: colors.white, textAlign: 'right' }}>{value}</span>
+    </div>
+  )
+}
+
 export default function UserDatabaseSection() {
   const [users, setUsers] = useState<AuthApiStoredUser[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const refresh = () => {
+    const token = getStoredToken()
+    if (!token) {
+      setError('Sign in with an admin account to view registered users.')
+      return
+    }
     setLoading(true)
     setError(null)
-    getUsersRequest()
+    getUsersRequest(token)
       .then((res) => setUsers(res.users))
-      .catch(() => setError('Could not reach the server.'))
+      .catch((e) => setError(e?.message === 'Admin access required' ? 'This account is not an admin.' : 'Could not reach the server.'))
       .finally(() => setLoading(false))
   }
 
   useEffect(refresh, [])
 
   return (
-    <SectionCard title={`Registered Accounts (Persistent Storage)${users ? ` — ${users.length}` : ''}`}>
+    <SectionCard title={`Registered Accounts${users ? ` — ${users.length}` : ''}`}>
       <button style={buttonStyle()} onClick={refresh} disabled={loading}>
         {loading ? 'Refreshing…' : 'Refresh'}
       </button>
@@ -36,9 +49,7 @@ export default function UserDatabaseSection() {
       {error && <p style={{ margin: 0, fontFamily: SANS, fontSize: '12px', color: colors.danger }}>{error}</p>}
 
       {users && users.length === 0 && !error && (
-        <p style={{ margin: 0, fontFamily: SANS, fontSize: '12px', color: colors.muted }}>
-          No accounts registered yet - this list only ever shows real accounts, never generated ones.
-        </p>
+        <p style={{ margin: 0, fontFamily: SANS, fontSize: '12px', color: colors.muted }}>No accounts registered yet.</p>
       )}
 
       {users && users.length > 0 && (
@@ -52,19 +63,37 @@ export default function UserDatabaseSection() {
                 padding: '10px 12px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '4px',
+                gap: '5px',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                <span style={{ fontFamily: SANS_DISPLAY, fontWeight: 600, fontSize: '14px', color: colors.white }}>{u.name}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' }}>
+                <span style={{ fontFamily: SANS_DISPLAY, fontWeight: 600, fontSize: '14px', color: colors.white }}>
+                  {u.name}
+                  {u.isAdmin && (
+                    <span style={{ fontFamily: SANS, fontSize: '10px', color: colors.amber, marginLeft: '6px' }}>ADMIN</span>
+                  )}
+                </span>
                 <span style={{ fontFamily: SANS, fontSize: '11px', color: colors.muted }}>
                   {new Date(u.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <span style={{ fontFamily: SANS, fontSize: '12px', color: colors.muted }}>{u.email}</span>
-              <span style={{ fontFamily: SANS, fontSize: '12px', color: colors.amber }}>
-                {u.stats?.currentStreak ?? 0} day streak · {u.stats?.totalXP ?? 0} XP
-              </span>
+
+              <Field label="Email" value={u.email} />
+              {u.phone && <Field label="Phone" value={u.phone} />}
+              <Field label="Gender" value={u.gender || '—'} />
+              <Field label="Birth date" value={u.birthDate || '—'} />
+              <Field label="Language" value={(u.locale || 'en').toUpperCase()} />
+
+              <div style={{ height: '1px', background: colors.cardBorder, margin: '3px 0' }} />
+
+              <Field label="Journey day" value={String(u.stats?.journeyDay ?? 0)} />
+              <Field label="Streak" value={`${u.stats?.currentStreak ?? 0} days`} />
+              <Field label="Total XP" value={String(u.stats?.totalXP ?? 0)} />
+              <Field label="Rituals" value={String(u.stats?.totalRitualCount ?? 0)} />
+              <Field
+                label="Ritual time"
+                value={`${Math.round((u.stats?.totalRitualTimeSec ?? 0) / 60)} min`}
+              />
             </div>
           ))}
         </div>

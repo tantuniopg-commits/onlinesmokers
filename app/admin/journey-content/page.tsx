@@ -1,22 +1,24 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import JourneyContentEditor from '../../devpanel/JourneyContentEditor'
 import { isDev } from '../../constants/env'
+import { isAdminUser } from '../../services/AuthService'
 
-// Journey Content Admin Mode - SADECE geliştirme ortamı için. Normal
-// kullanıcılara ASLA gösterilmiyor (bkz. aşağıdaki NODE_ENV kontrolü).
-// Aynı düzenleme mantığı artık Developer Panel'in "Message Editor"
-// bölümüyle paylaşılıyor (bkz. devpanel/JourneyContentEditor.tsx) - bu
-// sayfa sadece onu bağımsız, doğrudan bir URL'den erişilebilir bir kabukta
-// sunuyor.
-//
-// GELECEK: Bu sayfa ileride onaylı yönetici e-postalarıyla kısıtlanacak
-// (bkz. spesifikasyon "FUTURE ADMIN SYSTEM") - şimdilik sadece
-// process.env.NODE_ENV === 'development' kontrolü yeterli.
+// Journey Content Admin Mode - lokal geliştirmede (isDev) VEYA giriş yapmış
+// kullanıcının e-postası sunucudaki admin listesindeyse (isAdminUser)
+// erişilebilir. Aynı düzenleme mantığı Developer Panel'in "Message Editor"
+// bölümüyle paylaşılıyor (bkz. devpanel/JourneyContentEditor.tsx).
 export default function JourneyContentAdmin() {
-  if (!isDev) {
-    // Üretimde bu sayfa sessizce boş kalıyor - normal kullanıcılar hiçbir
-    // zaman bu içeriği görmüyor.
+  // isAdminUser() localStorage okuyor - SSR/statik prerender'da window yok,
+  // hydration uyumsuzluğunu önlemek için mount sonrası kontrol ediyoruz.
+  const [allowed, setAllowed] = useState(isDev)
+  useEffect(() => {
+    setAllowed(isDev || isAdminUser())
+  }, [])
+
+  if (!allowed) {
+    // Üretimde normal kullanıcılar için sessizce boş.
     return null
   }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { VelisUser } from '../lib/auth'
-import { getStoredUser } from '../services/AuthService'
+import { getStoredUser, isAdminUser } from '../services/AuthService'
 import { colors, SANS, SANS_DISPLAY } from './styles'
 import { isDev } from '../constants/env'
 
@@ -22,13 +22,11 @@ import TimeMachineSection from './sections/TimeMachine'
 import AnimationsSection from './sections/Animations'
 import ResetSection from './sections/Reset'
 
-// VELIS Developer Panel - SADECE geliştirme ortamı için (bkz. aşağıdaki
-// NODE_ENV kontrolü + Profile sayfasındaki 7-dokunuş jesti). Normal
-// kullanıcılar bu paneli asla göremiyor ve açamıyor.
-//
-// GELECEK: Onaylı yönetici e-postalarıyla kısıtlanacak (spesifikasyon
-// "FUTURE ADMIN SYSTEM") - şimdilik process.env.NODE_ENV === 'development'
-// kontrolü yeterli.
+// VELIS Developer Panel - lokal geliştirmede (isDev) VEYA üretimde giriş
+// yapmış kullanıcının e-postası sunucudaki admin listesindeyse (isAdminUser,
+// bkz. server/src/lib/admins.js) açılıyor. Her iki durumda da Profile
+// sayfasındaki 7-dokunuş jesti ile tetikleniyor. Normal kullanıcılar asla
+// göremiyor/açamıyor.
 //
 // Her bölüm kendi dosyasında, modüler ve kendi state'ini yönetiyor (bkz.
 // ./sections/*). Hepsi AYNI lib/ servislerini (auth, journey, time,
@@ -41,7 +39,7 @@ export default function DevPanel({ visible, onClose }: { visible: boolean; onClo
     if (visible) setUser(getStoredUser())
   }, [visible])
 
-  if (!isDev || !visible) return null
+  if ((!isDev && !isAdminUser()) || !visible) return null
 
   return (
     <div

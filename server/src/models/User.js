@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema(
     // değer olarak sayıp ikinci undefined'da index kurulumunu kırardı.
     phone: { type: String, unique: true, sparse: true, trim: true },
     passwordHash: { type: String, required: true },
+    // Hesap oluşturma formunda toplanıyor (bkz. app/profile/page.tsx) - şu an
+    // sadece admin panelindeki kullanıcı listesinde gösteriliyor, başka bir
+    // yerde kullanılmıyor. İkisi de opsiyonel (bu alanlar eklenmeden önce
+    // açılmış hesaplarda yok).
+    gender: { type: String, trim: true },
+    birthDate: { type: String, trim: true },
     stats: { type: statsSchema, default: () => ({}) },
     // Bildirim tercihleri + dil - sunucudaki soğuma hatırlatma job'ı (bkz.
     // jobs/cooldownReminder.js) hangi hesaba mail atacağını ve hangi dilde

@@ -32,6 +32,13 @@ export function clearUser(): void {
   userRepository.clear()
 }
 
+// Giriş yapmış kullanıcının e-postası sunucudaki admin listesinde mi (bkz.
+// server/src/lib/admins.js) - login/register yanıtında geldi, yerelde
+// saklandı. Admin listesinin kendisi client'a hiç inmiyor.
+export function isAdminUser(): boolean {
+  return !!getStoredUser()?.isAdmin
+}
+
 export type SignupFormInput = {
   firstName: string
   lastName: string
@@ -93,12 +100,19 @@ export function validateSignupForm(input: SignupFormInput): SignupFormValidity {
 
 // Journey/XP hesap oluşturmadan ÖNCE, gerçek ritüel tamamlanınca kaydedilmiş
 // oluyor (bkz. app/page.tsx, completeRitual) - burada sahte veri üretmiyoruz.
-export function createAccount(input: { firstName: string; lastName: string; email: string; id?: string }): VelisUser {
+export function createAccount(input: {
+  firstName: string
+  lastName: string
+  email: string
+  id?: string
+  isAdmin?: boolean
+}): VelisUser {
   const user: VelisUser = {
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),
     email: input.email.trim(),
     id: input.id,
+    isAdmin: input.isAdmin || undefined,
   }
   saveUser(user)
   setAppState('REGISTERED')

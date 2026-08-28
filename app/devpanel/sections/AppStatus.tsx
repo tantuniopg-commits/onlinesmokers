@@ -12,7 +12,10 @@ export default function AppStatusSection({ user }: { user: VelisUser | null }) {
       <Row label="Build Mode" value={isDev ? 'Debug' : 'Release'} />
       <Row label="Environment" value={isDev ? 'Development' : 'Production'} />
       <Row label="Logged In User" value={user ? `${user.firstName} ${user.lastName}` : 'Guest'} />
-      <Row label="Admin Status" value="Enabled (dev only)" />
+      <Row
+        label="Admin Status"
+        value={user?.isAdmin ? `Admin (${user.email})` : isDev ? 'Dev build (unrestricted)' : 'Not an admin'}
+      />
     </SectionCard>
   )
 }

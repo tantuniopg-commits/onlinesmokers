@@ -10,6 +10,10 @@ export type VelisUser = {
   // gerçek kullanıcı listesinde "you" satırını tekilleştirmek için kullanılıyor
   // (bkz. app/leaderboard/page.tsx). Backend olmadan/misafir modunda yok.
   id?: string
+  // Sunucu, e-posta admin listesindeyse (bkz. server/src/lib/admins.js) login/
+  // register yanıtında true dönüyor. Üretimde Developer Panel'i açan kilit
+  // (bkz. isDev || isAdmin). Admin listesinin kendisi client'a hiç inmiyor.
+  isAdmin?: boolean
 }
 
 // Journey (gün/seri) ve XP (ödül) sistemleri KASITLI OLARAK birbirinden

@@ -6,7 +6,7 @@ import VelisMark from '../VelisMark'
 import { getStoredStats, saveStats, getStoredToken } from '../lib/auth'
 import type { VelisUser, VelisStats } from '../lib/auth'
 import { getStoredSettings } from '../lib/settings'
-import { getStoredUser, validateSignupForm, createAccount, saveToken, getPasswordRuleStatus } from '../services/AuthService'
+import { getStoredUser, validateSignupForm, createAccount, saveToken, getPasswordRuleStatus, isAdminUser } from '../services/AuthService'
 import type { PasswordRuleId } from '../services/AuthService'
 import { registerRequest, loginRequest, AuthApiError, checkEmailAvailableRequest, updatePreferencesRequest } from '../lib/authApi'
 import { getTodayIndexMondayFirst } from '../services/TimeService'
@@ -525,7 +525,7 @@ export default function Profile() {
   const devTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleLogoTap = () => {
-    if (!isDev) return
+    if (!isDev && !isAdminUser()) return
     if (devTapTimerRef.current) clearTimeout(devTapTimerRef.current)
     setDevTapCount((c) => {
       const next = c + 1
@@ -705,10 +705,19 @@ export default function Profile() {
         password,
         undefined,
         getStoredStats(),
-        locale
+        locale,
+        { gender: gender || undefined, birthDate: birthDate || undefined }
       )
       saveToken(result.token)
-      finishAuth(createAccount({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), id: result.user.id }))
+      finishAuth(
+        createAccount({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          id: result.user.id,
+          isAdmin: result.user.isAdmin,
+        })
+      )
     } catch (e) {
       return e instanceof AuthApiError ? e.message : t('profile.error.generic')
     }
@@ -725,7 +734,7 @@ export default function Profile() {
       // yerden devam" tam olarak bunun sayesinde, hangi cihazdan girilirse girilsin.
       if (result.user.stats) saveStats(result.user.stats)
       const { firstName: fn, lastName: ln } = splitName(result.user.name)
-      finishAuth(createAccount({ firstName: fn, lastName: ln, email: result.user.email, id: result.user.id }))
+      finishAuth(createAccount({ firstName: fn, lastName: ln, email: result.user.email, id: result.user.id, isAdmin: result.user.isAdmin }))
     } catch (e) {
       setAuthError(e instanceof AuthApiError ? e.message : t('profile.error.generic'))
     } finally {
@@ -1280,7 +1289,7 @@ export default function Profile() {
               alignItems: 'center',
               justifyContent: 'center',
               background: 'rgba(255, 178, 90, 0.05)',
-              cursor: isDev ? 'pointer' : 'default',
+              cursor: isDev || isAdminUser() ? 'pointer' : 'default',
             }}
           >
             <span style={{ fontFamily: FONT_SANS, fontWeight: 600, fontSize: '22px', color: '#F3CE8E' }}>

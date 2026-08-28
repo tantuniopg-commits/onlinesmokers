@@ -18,7 +18,7 @@ export function apiBase() {
   return `${window.location.protocol}//${window.location.hostname}:${AUTH_API_PORT}`
 }
 
-export type AuthApiUser = { id: string; name: string; email: string; phone?: string; stats?: VelisStats }
+export type AuthApiUser = { id: string; name: string; email: string; phone?: string; stats?: VelisStats; isAdmin?: boolean }
 export type AuthApiResult = { token: string; user: AuthApiUser }
 export type AuthApiUserResult = { user: AuthApiUser }
 
@@ -47,8 +47,25 @@ async function request<T>(method: string, path: string, body?: unknown, token?: 
 // Email VE telefon her ikisi de sunucuda benzersiz (bkz. server/src/models/User.js
 // unique index'leri) - aynı email veya aynı telefonla ikinci bir hesap
 // açılamıyor, sunucu 409 ile "already in use" hatası dönüyor.
-export function registerRequest(name: string, email: string, password: string, phone?: string, stats?: VelisStats, locale?: string) {
-  return request<AuthApiResult>('POST', '/api/auth/register', { name, email, password, phone, stats, locale })
+export function registerRequest(
+  name: string,
+  email: string,
+  password: string,
+  phone?: string,
+  stats?: VelisStats,
+  locale?: string,
+  extra?: { gender?: string; birthDate?: string }
+) {
+  return request<AuthApiResult>('POST', '/api/auth/register', {
+    name,
+    email,
+    password,
+    phone,
+    stats,
+    locale,
+    gender: extra?.gender,
+    birthDate: extra?.birthDate,
+  })
 }
 
 export function loginRequest(email: string, password: string) {
@@ -110,14 +127,25 @@ export function getLeaderboardRequest() {
   return request<AuthApiLeaderboardResult>('GET', '/api/auth/leaderboard')
 }
 
-export type AuthApiStoredUser = { id: string; name: string; email: string; stats?: VelisStats; createdAt: string }
+export type AuthApiStoredUser = {
+  id: string
+  name: string
+  email: string
+  phone?: string | null
+  gender?: string | null
+  birthDate?: string | null
+  locale?: string
+  isAdmin?: boolean
+  stats?: VelisStats
+  createdAt: string
+}
 export type AuthApiUsersResult = { users: AuthApiStoredUser[] }
 
-// SADECE Developer Panel için (bkz. devpanel/sections/UserDatabase.tsx) -
-// kalıcı depolamada gerçekten ne saklandığını doğrulamak amacıyla. Şifre
-// backend'den zaten hiç dönmüyor (bkz. authController.js listUsers).
-export function getUsersRequest() {
-  return request<AuthApiUsersResult>('GET', '/api/auth/users')
+// Admin panelindeki kayıtlı hesaplar listesi (bkz. devpanel/sections/
+// UserDatabase.tsx). Sunucuda requireAdmin ile korunuyor - token ŞART,
+// admin olmayan token'lar 403 alır. Şifre hash'i hiç dönmüyor.
+export function getUsersRequest(token: string) {
+  return request<AuthApiUsersResult>('GET', '/api/auth/users', undefined, token)
 }
 
 export type AuthApiAvailabilityResult = { available: boolean }
