@@ -276,7 +276,7 @@ function Landing() {
   // rastgele, dikeyde objenin boyu içinde bir yere yerleşiyor.
   const ORB_MIN_GAP = 46
   const ORB_MAX_DIST = 120
-  const ORB_SIZE = 24
+  const ORB_SIZE = 18
   const spawnOrb = () => {
     const rect = objectRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -528,7 +528,10 @@ function Landing() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'calc(20px + env(safe-area-inset-top)) 32px 88px',
+        // Alt boşluk sabit tab bar'ı (BottomNav: ~72px + safe-area-inset-bottom)
+        // TAM olarak geçmeli - aksi halde ortalanan içeriğin en alttaki butonu
+        // (Başlat / Devam et) tab bar'ın arkasında kalıp kesiliyordu.
+        padding: 'calc(20px + env(safe-area-inset-top)) 32px calc(env(safe-area-inset-bottom) + 104px)',
         fontFamily: FONT_SANS,
         position: 'relative',
         overflow: 'hidden',
@@ -572,7 +575,7 @@ function Landing() {
           <h1
             style={{
               position: 'absolute',
-              top: '4px',
+              top: '30px',
               left: 0,
               right: 0,
               fontFamily: FONT_SANS,
@@ -605,7 +608,7 @@ function Landing() {
           <div
             style={{
               position: 'absolute',
-              top: '4px',
+              top: '30px',
               left: 0,
               right: 0,
               pointerEvents: 'none',
@@ -729,7 +732,7 @@ function Landing() {
         {/* ---- METİN KATMANLARI ---- */}
         {/* Tümü aynı konumda üst üste, sadece opacity ile geçiş yapıyor ki
             layout zıplamasın. Sabit bir min-height ile yer ayrılıyor. */}
-        <div style={{ position: 'relative', minHeight: '160px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', minHeight: '138px', width: '100%', display: 'flex', justifyContent: 'center' }}>
           {/* IDLE: dokun ikonu + "Touch to begin" + alt talimat + "touch and
               hold" bilgi kartı - referans görsele göre yeniden tasarlandı. */}
           <div
@@ -761,19 +764,6 @@ function Landing() {
             >
               {t('ritual.idle.cta')}
             </div>
-            <div
-              style={{
-                fontFamily: FONT_SANS,
-                fontWeight: 400,
-                fontSize: '16px',
-                letterSpacing: '0.2px',
-                color: '#D2CCC5',
-                opacity: 0.7,
-                textAlign: 'center',
-              }}
-            >
-              {t('ritual.idle.helper')}
-            </div>
           </div>
 
           {/* READY: aktivasyon tamamlandı - artık karanlık bir kart değil,
@@ -794,8 +784,8 @@ function Landing() {
           >
             <div
               style={{
-                width: '40px',
-                height: '40px',
+                width: '34px',
+                height: '34px',
                 borderRadius: '50%',
                 border: '1px solid rgba(216, 174, 108, 0.5)',
                 display: 'flex',
@@ -803,7 +793,7 @@ function Landing() {
                 justifyContent: 'center',
               }}
             >
-              <CheckIcon size={18} color="#D8AE6C" />
+              <CheckIcon size={16} color="#D8AE6C" />
             </div>
             <div
               style={{
@@ -820,10 +810,10 @@ function Landing() {
               className="start-ritual-btn"
               onClick={handleStartRitual}
               style={{
-                marginTop: '18px',
-                width: '260px',
-                maxWidth: '80vw',
-                padding: '16px 0',
+                marginTop: '12px',
+                width: '220px',
+                maxWidth: '78vw',
+                padding: '13px 0',
                 borderRadius: '999px',
                 border: 'none',
                 background: 'linear-gradient(180deg, #F3CE8E 0%, #D9A254 100%)',
@@ -831,7 +821,7 @@ function Landing() {
                 color: '#171410',
                 fontFamily: FONT_SANS,
                 fontWeight: 600,
-                fontSize: '17px',
+                fontSize: '15px',
                 letterSpacing: '0.2px',
                 cursor: 'pointer',
               }}
@@ -877,7 +867,7 @@ function Landing() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '20px',
+              gap: '14px',
               opacity: phase === 'complete' ? 1 : 0,
               transition: 'opacity 600ms ease-in-out',
               pointerEvents: 'none',
@@ -888,10 +878,10 @@ function Landing() {
                 style={{
                   fontFamily: FONT_SANS,
                   fontWeight: 600,
-                  fontSize: '13px',
+                  fontSize: '12px',
                   letterSpacing: '0.4px',
                   color: '#E3C08C',
-                  padding: '9px 20px',
+                  padding: '7px 16px',
                   borderRadius: '999px',
                   border: '1px solid rgba(255, 178, 90, 0.3)',
                   background: 'rgba(255, 178, 90, 0.04)',
@@ -907,15 +897,15 @@ function Landing() {
               className="continue-btn"
               onClick={handleContinue}
               style={{
-                marginTop: '6px',
-                padding: '15px 44px',
+                marginTop: '4px',
+                padding: '12px 36px',
                 borderRadius: '999px',
                 border: 'none',
                 background: '#ECE8E3',
                 color: '#171410',
                 fontFamily: FONT_SANS,
                 fontWeight: 600,
-                fontSize: '16px',
+                fontSize: '15px',
                 letterSpacing: '0.3px',
                 cursor: 'pointer',
                 opacity: completeVisible >= 2 ? 1 : 0,
@@ -955,12 +945,13 @@ function Landing() {
                 top: `${orb.y}px`,
                 left: `${orb.x}px`,
                 transform: 'translate(-50%, -50%)',
-                width: '24px',
-                height: '24px',
+                width: '18px',
+                height: '18px',
                 borderRadius: '50%',
                 background:
-                  'radial-gradient(circle at 35% 30%, #FFF3D9 0%, #FFD9A0 30%, #FFB347 55%, #F08A24 82%, #D9701A 100%)',
-                boxShadow: '0 0 16px 4px rgba(255, 178, 90, 0.5), 0 0 28px 8px rgba(240, 138, 36, 0.22)',
+                  'radial-gradient(circle at 34% 28%, #FFFBF0 0%, #FFE3B4 26%, #FFC172 52%, #F0921F 80%, #D9701A 100%)',
+                boxShadow:
+                  'inset 0 0 3px rgba(255, 245, 220, 0.9), 0 0 8px 2px rgba(255, 196, 120, 0.55), 0 0 18px 5px rgba(240, 138, 36, 0.2)',
                 opacity: orb.fading ? 0 : 1,
                 transition: 'opacity 480ms ease-in-out',
                 pointerEvents: 'auto',
@@ -979,9 +970,9 @@ function Landing() {
                 transform: 'translate(-50%, -50%)',
                 fontFamily: FONT_SANS,
                 fontWeight: 700,
-                fontSize: '18px',
+                fontSize: '14px',
                 color: '#F3CE8E',
-                textShadow: '0 0 10px rgba(255, 178, 90, 0.6)',
+                textShadow: '0 0 9px rgba(255, 178, 90, 0.6)',
                 pointerEvents: 'none',
               }}
             >

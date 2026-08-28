@@ -67,7 +67,7 @@ function RewardContent() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'calc(28px + env(safe-area-inset-top)) 28px calc(28px + env(safe-area-inset-bottom))',
+        padding: 'calc(28px + env(safe-area-inset-top)) 28px calc(env(safe-area-inset-bottom) + 104px)',
         overflow: 'hidden',
         position: 'relative',
       }}
