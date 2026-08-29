@@ -93,9 +93,7 @@ export const translations = {
     'settings.item.account': 'Account',
     'settings.item.language': 'Language',
     'settings.item.notifications': 'Notifications',
-    'settings.item.appearance': 'Appearance',
     'settings.item.privacy': 'Privacy & Security',
-    'settings.item.premium': 'Premium',
     'settings.item.about': 'About',
 
     'settings.language.title': 'Language',
@@ -104,23 +102,12 @@ export const translations = {
     'settings.notifications.title': 'Notifications',
     'settings.notifications.dailyRitualReminder': 'Daily Ritual Reminder',
 
-    'settings.appearance.title': 'Appearance',
-    'settings.appearance.darkMode': 'Dark Mode',
-    'settings.appearance.comingSoon': 'Light Mode is coming in a future update.',
 
-    'settings.premium.title': 'Premium',
-    'settings.premium.heading': 'Premium features coming soon.',
-    'settings.premium.body': "We're building something worth waiting for.",
 
     'settings.about.title': 'About',
     'settings.about.version': 'VELIS Version',
     'settings.about.build': 'Build Number',
     'settings.about.support': 'Contact Support',
-    'settings.about.supportNote': 'Support options will be available once VELIS launches.',
-    'settings.about.rate': 'Rate App',
-    'settings.about.rateNote': "You'll be able to rate VELIS once it's available in the App Store.",
-    'settings.about.website': 'Website',
-    'settings.about.websiteNote': 'The VELIS website is coming soon.',
 
     'settings.privacy.title': 'Privacy & Security',
     'settings.privacy.privacyPolicy': 'Privacy Policy',
@@ -307,9 +294,7 @@ export const translations = {
     'settings.item.account': 'Hesap',
     'settings.item.language': 'Dil',
     'settings.item.notifications': 'Bildirimler',
-    'settings.item.appearance': 'Görünüm',
     'settings.item.privacy': 'Gizlilik ve Güvenlik',
-    'settings.item.premium': 'Premium',
     'settings.item.about': 'Hakkında',
 
     'settings.language.title': 'Dil',
@@ -318,23 +303,12 @@ export const translations = {
     'settings.notifications.title': 'Bildirimler',
     'settings.notifications.dailyRitualReminder': 'Günlük Ritüel Hatırlatması',
 
-    'settings.appearance.title': 'Görünüm',
-    'settings.appearance.darkMode': 'Koyu Tema',
-    'settings.appearance.comingSoon': 'Açık Tema ileride bir güncellemeyle gelecek.',
 
-    'settings.premium.title': 'Premium',
-    'settings.premium.heading': 'Premium özellikler yakında.',
-    'settings.premium.body': 'Beklemeye değer bir şey inşa ediyoruz.',
 
     'settings.about.title': 'Hakkında',
     'settings.about.version': 'VELIS Sürümü',
     'settings.about.build': 'Yapı Numarası',
     'settings.about.support': 'Destek ile İletişim',
-    'settings.about.supportNote': 'Destek seçenekleri VELIS yayınlanınca kullanılabilir olacak.',
-    'settings.about.rate': 'Uygulamayı Puanla',
-    'settings.about.rateNote': 'VELIS App Store\'da yayınlanınca puanlayabileceksin.',
-    'settings.about.website': 'Web Sitesi',
-    'settings.about.websiteNote': 'VELIS web sitesi yakında.',
 
     'settings.privacy.title': 'Gizlilik ve Güvenlik',
     'settings.privacy.privacyPolicy': 'Gizlilik Politikası',
@@ -378,7 +352,7 @@ export const translations = {
     'profile.error.firstName': 'Ad gerekli.',
     'profile.error.lastName': 'Soyad gerekli.',
     'profile.error.email': 'Geçerli bir e-posta adresi gir.',
-    'profile.error.emailTaken': 'Bu email ile zaten bir hesap var.',
+    'profile.error.emailTaken': 'Bu e-posta adresiyle zaten bir hesap var.',
     'profile.error.phone': "10 hanenin tümünü gir.",
     'profile.error.phoneTaken': 'Bu telefon numarasıyla zaten bir hesap var.',
     'profile.error.gender': 'Lütfen bir cinsiyet seç.',

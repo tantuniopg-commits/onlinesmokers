@@ -6,7 +6,7 @@
 //
 // The amber core is a small, fixed-size bead sitting at the object's
 // exact center - the same size and position always. Activation is driven
-// entirely by the `activating` prop (owned by the parent's ~10s timer):
+// entirely by the `activating` prop (owned by the parent's ~5s timer):
 // while true, a softer glow spreads from the core outward to both ends
 // of the ceramic (never painting it fully orange - mix-blend-mode keeps
 // the ceramic tone visible through the glow). It stays fully spread
@@ -18,7 +18,7 @@
 // goes dark mid-ritual. On completion the light retreats back to the core
 // and fades, leaving only the calm ceramic body.
 
-export const ACTIVATING_MS = 10000
+export const ACTIVATING_MS = 5000
 
 const HOLD_TRANSITION_MS = 380
 const RETREAT_MS = 1700

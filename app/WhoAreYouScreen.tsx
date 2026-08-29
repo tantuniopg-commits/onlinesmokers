@@ -14,11 +14,18 @@ import { useLocale } from './contexts/LocaleContext'
 const SELECT_DELAY_MS = 300
 const CARD_SIZE = 132
 
+// İkon çizimlerinin görsel sınırlayıcı kutusu 48x48 viewBox'ın tam ortasında
+// değil - dıştaki daire flex ile SVG kutusunu ortalıyor ama çizimin kendisi
+// kutunun içinde kaçık duruyordu. <g translate> ile çizimi gerçek merkezine
+// kaydırıyoruz (bkz. ChoiceCard / profile StatusCard - her ikisi de bu
+// bileşenleri kullanıyor).
 export function LeafIcon({ size = 44 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke="#E3C08C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 34C10 24 14 12 30 10c4 10 0 22-10 26-4 1.6-4.6 0-6-2Z" />
-      <path d="M16 32c4-6 9-11 14-16" />
+      <g transform="translate(5 3)">
+        <path d="M14 34C10 24 14 12 30 10c4 10 0 22-10 26-4 1.6-4.6 0-6-2Z" />
+        <path d="M16 32c4-6 9-11 14-16" />
+      </g>
     </svg>
   )
 }
@@ -26,9 +33,11 @@ export function LeafIcon({ size = 44 }: { size?: number }) {
 export function CigaretteIcon({ size = 44 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke="#E3C08C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 27h22a4 4 0 0 0 4-4 4 4 0 0 0-4-4H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Z" />
-      <path d="M31 21v6" />
-      <path d="M20 12c1.4 1 2 2.4 1.6 4M25 10c1.8 1.2 2.6 3 2 5" opacity="0.7" />
+      <g transform="translate(3 5.5)">
+        <path d="M9 27h22a4 4 0 0 0 4-4 4 4 0 0 0-4-4H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Z" />
+        <path d="M31 21v6" />
+        <path d="M20 12c1.4 1 2 2.4 1.6 4M25 10c1.8 1.2 2.6 3 2 5" opacity="0.7" />
+      </g>
     </svg>
   )
 }

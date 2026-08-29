@@ -249,7 +249,9 @@ function Landing() {
   const isFirstEverRitualRef = useRef(false)
   const [showRitualGuide, setShowRitualGuide] = useState(false)
   const objectRef = useRef<HTMLDivElement>(null)
-  const objectRect = useTargetRect(objectRef, showRitualGuide && phase === 'idle')
+  // Rehber hem idle'da (RITUAL adımı) hem de ilk ritüel SIRASINDA (ORB_XP adımı -
+  // "toplara dokun, ekstra XP") objeyi spotlight'lıyor.
+  const objectRect = useTargetRect(objectRef, showRitualGuide && (phase === 'idle' || phase === 'ritual'))
 
   useEffect(() => {
     isFirstEverRitualRef.current = getStoredStats().journeyTimestamp === null
@@ -929,6 +931,20 @@ function Landing() {
             setGuideCompleted()
             setShowRitualGuide(false)
           }}
+        />
+      )}
+
+      {/* İlk ritüel SIRASINDA - amber toplara dokunup ekstra XP kazanma
+          ipucu. Spotlight objede (pointer-events:none) kaldığı için alttaki
+          toplar dokunulabilir kalıyor. Kullanıcı satırları geçince ya da
+          Atla deyince kapanıyor - COMPLETION rehberi aftercare'de ayrı. */}
+      {!introActive && showRitualGuide && phase === 'ritual' && (
+        <GuideOverlay
+          targetRect={objectRect}
+          lines={getGuideScript(locale).ORB_XP}
+          guidePlacement="bottom"
+          onDialogueDone={() => setShowRitualGuide(false)}
+          onSkip={() => setShowRitualGuide(false)}
         />
       )}
 

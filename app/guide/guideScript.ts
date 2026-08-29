@@ -1,6 +1,6 @@
-// VELIS Guide - dokuz adımın tam metni. Şu an gerçekten sahnelenen adımlar
-// WELCOME / USER_TYPE / RITUAL / HOLD_INTERACTION / COMPLETION (bkz.
-// WelcomeScreen.tsx, WhoAreYouScreen.tsx, app/page.tsx, app/aftercare/page.tsx) -
+// VELIS Guide - adımların tam metni. Şu an gerçekten sahnelenen adımlar
+// WELCOME / USER_TYPE / RITUAL / ORB_XP / COMPLETION (bkz. WelcomeScreen.tsx,
+// WhoAreYouScreen.tsx, app/page.tsx, app/aftercare/page.tsx) -
 // PRIVACY/EMAIL/PHONE/PROFILE bu uygulamada Guided Registration Mode'un bir
 // parçası olarak DAHA SONRA (ilk ritüelden sonra) gerçekleşiyor; metinleri
 // burada hazır duruyor, o akışa bağlamak ayrı bir adım.
@@ -12,7 +12,7 @@ export type GuideStepId =
   | 'PHONE'
   | 'PROFILE'
   | 'RITUAL'
-  | 'HOLD_INTERACTION'
+  | 'ORB_XP'
   | 'COMPLETION'
 
 import type { UserType } from '../lib/onboarding'
@@ -25,12 +25,12 @@ import type { LocaleCode } from '../lib/i18n'
 const WELCOME_LINES_EN: Record<UserType, string[]> = {
   Smoker: [
     'VELIS acts as your guide, helping you take control of every smoking moment.',
-    'Real-world rewards help turn that control into a lasting habit.',
+    'XP rewards help turn that control into a lasting habit.',
     "Now, let's get to know VELIS together.",
   ],
   Nonsmoker: [
     'VELIS acts as your guide, helping you take control whenever the urge appears.',
-    'Real-world rewards help turn that control into a lasting habit.',
+    'XP rewards help turn that control into a lasting habit.',
     "Now, let's get to know VELIS together.",
   ],
 }
@@ -38,12 +38,12 @@ const WELCOME_LINES_EN: Record<UserType, string[]> = {
 const WELCOME_LINES_TR: Record<UserType, string[]> = {
   Smoker: [
     'VELIS, her sigara anında kontrolü sana geri kazandıran rehberindir.',
-    'Gerçek dünya ödülleri, bu kontrolü kalıcı bir alışkanlığa dönüştürmene yardımcı olur.',
+    'XP ödülleri, bu kontrolü kalıcı bir alışkanlığa dönüştürmene yardımcı olur.',
     "Şimdi VELIS'i birlikte tanıyalım.",
   ],
   Nonsmoker: [
     'VELIS, istek belirdiğinde kontrolü sana geri kazandıran rehberindir.',
-    'Gerçek dünya ödülleri, bu kontrolü kalıcı bir alışkanlığa dönüştürmene yardımcı olur.',
+    'XP ödülleri, bu kontrolü kalıcı bir alışkanlığa dönüştürmene yardımcı olur.',
     "Şimdi VELIS'i birlikte tanıyalım.",
   ],
 }
@@ -68,16 +68,12 @@ const GUIDE_SCRIPT_EN: Record<GuideStepId, string[]> = {
     'This is your ritual.',
     'Each ritual lasts 30 seconds.',
     "Touch the Amber Core when you're ready.",
-    'The object will activate in about 10 seconds.',
+    'The object will activate in about 5 seconds.',
   ],
-  HOLD_INTERACTION: [
-    'Keep your finger on the light.',
-    'As long as you stay...',
-    '...the ritual continues.',
-    'If you let go...',
-    '...the ritual simply waits.',
-    "When you're ready...",
-    '...continue.',
+  ORB_XP: [
+    'Watch for the amber orbs.',
+    'Tap them during your ritual for bonus XP.',
+    'Quick taps in a row are worth more.',
   ],
   COMPLETION: [
     'Congratulations!',
@@ -98,16 +94,12 @@ const GUIDE_SCRIPT_TR: Record<GuideStepId, string[]> = {
     'Bu senin ritüelin.',
     'Her ritüel 30 saniye sürer.',
     "Hazır olduğunda Amber Çekirdek'e dokun.",
-    'Nesne yaklaşık 10 saniye içinde etkinleşecek.',
+    'Nesne yaklaşık 5 saniye içinde etkinleşecek.',
   ],
-  HOLD_INTERACTION: [
-    'Parmağını ışığın üzerinde tut.',
-    'Orada kaldığın sürece...',
-    '...ritüel devam eder.',
-    'Bırakırsan...',
-    '...ritüel sadece bekler.',
-    'Hazır olduğunda...',
-    '...devam et.',
+  ORB_XP: [
+    'Amber toplara dikkat et.',
+    'Ritüel sırasında onlara dokun, ekstra XP kazan.',
+    'Art arda hızlı dokunuşlar daha çok değer.',
   ],
   COMPLETION: [
     'Tebrikler!',

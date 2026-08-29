@@ -15,9 +15,7 @@ export default function SettingsIndex() {
     { label: t('settings.item.account'), path: '/profile/settings/account' },
     { label: t('settings.item.language'), path: '/profile/settings/language' },
     { label: t('settings.item.notifications'), path: '/profile/settings/notifications' },
-    { label: t('settings.item.appearance'), path: '/profile/settings/appearance' },
     { label: t('settings.item.privacy'), path: '/profile/settings/privacy' },
-    { label: t('settings.item.premium'), path: '/profile/settings/premium' },
     { label: t('settings.item.about'), path: '/profile/settings/about' },
   ]
 
