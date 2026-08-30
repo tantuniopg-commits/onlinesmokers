@@ -46,7 +46,7 @@ function pickStats(input) {
 }
 
 async function register(req, res) {
-  const { name, email, password, phone, stats, locale } = req.body || {}
+  const { name, email, password, phone, stats, locale, gender, birthDate } = req.body || {}
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email and password are required' })
   }
@@ -72,6 +72,8 @@ async function register(req, res) {
     name,
     email,
     phone: phone || undefined,
+    gender: typeof gender === 'string' && gender.trim() ? gender.trim() : undefined,
+    birthDate: typeof birthDate === 'string' && birthDate.trim() ? birthDate.trim() : undefined,
     passwordHash,
     stats: pickStats(stats),
     locale: resolvedLocale,
@@ -222,13 +224,17 @@ async function leaderboard(req, res) {
 // devpanel/sections/UserDatabase.tsx). requireAdmin ile korunuyor - route'a
 // bakınız. passwordHash HİÇBİR ZAMAN dönmüyor (projeksiyona dahil değil).
 async function listUsers(req, res) {
-  const users = await User.find({}, 'name email phone locale stats createdAt').sort({ createdAt: -1 }).lean()
+  const users = await User.find({}, 'name email phone gender birthDate locale stats createdAt')
+    .sort({ createdAt: -1 })
+    .lean()
   res.json({
     users: users.map((u) => ({
       id: u._id,
       name: u.name,
       email: u.email,
       phone: u.phone || null,
+      gender: u.gender || null,
+      birthDate: u.birthDate || null,
       locale: u.locale || 'en',
       isAdmin: isAdminEmail(u.email),
       stats: u.stats || {},

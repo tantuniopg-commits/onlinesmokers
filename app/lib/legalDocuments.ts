@@ -2,9 +2,13 @@
 // geliyor (bkz. app/profile/page.tsx doküman okuyucusu, app/profile/settings/
 // privacy/page.tsx). EN/TR ayrı kaynak metinler - getTermsOfService/
 // getPrivacyPolicy o anki locale'e göre doğru olanı döndürüyor.
-// Gizlilik Politikası "Topladığımız Bilgiler" bölümü uygulamanın gerçekten
-// sakladığı verilerle (ad, e-posta, hash'li şifre, ilerleme, tercihler)
-// eşleşecek şekilde güncellendi (2026-08-30).
+//
+// Gizlilik Politikası 2026-08-30'da baştan yazıldı - uygulamanın GERÇEKTEN
+// topladığı her veri türünü (ad, e-posta, cinsiyet, doğum tarihi, hash'li
+// şifre, uygulama içi ilerleme/XP/streak, dil+bildirim tercihleri, hesap
+// meta verisi) listeliyor; KVKK/GDPR dayanakları, uluslararası aktarım,
+// saklama, haklar, hesap silme ve 13+ kuralı dahil. İki dil BİREBİR aynı
+// yapı - biri değişirse diğeri de değişmeli.
 
 export type LegalSection = {
   heading: string
@@ -122,80 +126,119 @@ const PRIVACY_POLICY_EN: LegalDocument = {
   title: 'Privacy Policy',
   lastUpdated: 'Last Updated: August 30, 2026',
   intro: [
-    'Velis ("we", "our", or "us") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our application.',
-    'By using Velis, you agree to this Privacy Policy.',
+    'Velis ("Velis", "we", "our", or "us") respects your privacy. This Privacy Policy explains what information we collect when you use the Velis mobile application, why we collect it, how it is stored and shared, and the choices and rights you have.',
+    'By creating an account or using Velis, you agree to this Privacy Policy. If you do not agree, please do not use the app.',
   ],
   sections: [
     {
       heading: '1. Information We Collect',
-      paragraphs: ['We collect only the information necessary to provide our service:'],
+      paragraphs: ['We collect only the information needed to run the app and your account.', 'Information you provide when you create an account:'],
       bullets: [
-        'Your name and email address, provided when you create an account',
-        'Your password, which is stored only as a one-way encrypted hash — we never store or see your actual password',
-        'Your progress in the app (journey day, streak, XP, ritual count and duration), so it can sync across your devices',
-        'Your language and notification preferences',
-        'Basic account metadata such as the date your account was created',
+        'Name',
+        'Email address',
+        'Gender (Female / Male / Other / Prefer not to say)',
+        'Date of birth (used to confirm you are at least 13 years old)',
+        'Password — stored only as a one-way cryptographic hash. We never store, see, or have any way to recover your actual password.',
       ],
-      afterBullets: ['You can use the core features of the app without creating an account; in that case your progress stays on your device only.'],
+      afterBullets: [
+        'Information created as you use the app: your in-app progress and activity, including journey day, current streak, total XP, number of rituals completed, total ritual time, and your reward-claim history. If you are signed in, this is stored on our servers so it can sync across your devices.',
+        'Preferences: your chosen language and notification settings.',
+        'Account metadata: the date your account was created and, for security, timestamps of certain account events.',
+        'You can use the core features of Velis (the ritual, the journey, local progress) without creating an account. In that case your progress stays only on your device and is not sent to us.',
+      ],
     },
     {
       heading: '2. How We Use Your Information',
       paragraphs: ['We use your information to:'],
       bullets: [
-        'Provide and operate the app and sync your progress across devices',
-        'Send account and reminder emails you have not opted out of',
-        'Ensure security and prevent misuse',
-        'Understand how the app is used so we can improve it',
+        'Create and operate your account and authenticate you when you sign in',
+        'Save your progress and sync it across your devices',
+        'Show the leaderboard, which ranks registered users by streak and XP (your name and stats are visible to other users there; your email is never shown)',
+        'Send you account-related emails (verification codes, password resets) and the ritual reminder emails you have not turned off',
+        'Keep the service secure, prevent abuse, and troubleshoot problems',
+        'Understand, in aggregate, how the app is used so we can improve it',
       ],
-      afterBullets: ['Authorized members of our team may access account data (never passwords) when needed for support, moderation, or security.'],
+      afterBullets: [
+        'We do not use your data for advertising, and we do not sell it.',
+        'Authorized members of our team may access account data — never passwords — when reasonably necessary for support, moderation, security, or legal compliance.',
+      ],
     },
     {
-      heading: '3. Data Sharing',
-      paragraphs: ['We do not sell or rent your personal data.', 'We share data only:'],
+      heading: '3. Legal Bases for Processing',
+      paragraphs: [
+        'Where data-protection law (such as the Turkish KVKK or the EU/UK GDPR) applies, we process your personal data on the following bases: performance of our agreement with you (to provide the app and your account); your consent (for optional reminder emails, which you can withdraw at any time in Settings); and our legitimate interests (keeping the service secure and improving it), balanced against your rights.',
+      ],
+    },
+    {
+      heading: '4. Sharing and Disclosure',
+      paragraphs: ['We do not sell or rent your personal data. We share it only in these cases:'],
       bullets: [
-        'With service providers who process it on our behalf to run the app — hosting, database, and email delivery',
-        'If required by law',
+        'Service providers who process data on our behalf to run Velis: application hosting, database hosting, transactional email delivery, and (if you verify a phone number) SMS delivery. These providers may only use the data to provide their service to us.',
+        'Legal requirements: if we are required to disclose data by law, legal process, or a valid governmental request, or to protect the rights, safety, or property of Velis, our users, or the public.',
+        'Business transfer: if Velis is involved in a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction; we will notify you if this materially changes how your data is handled.',
       ],
     },
     {
-      heading: '4. Data Storage and Security',
+      heading: '5. Where Your Data Is Processed',
       paragraphs: [
-        'Data is transmitted over encrypted connections (HTTPS) and stored on secured servers. Passwords are hashed and are not recoverable.',
-        'Your data is kept only as long as necessary to provide the service or comply with legal obligations. When you delete your account, your account data is permanently removed from our servers.',
+        'Our servers and some of our service providers are located outside your country, including in the European Union and the United States. When your data is transferred internationally, we rely on appropriate safeguards required by applicable law.',
       ],
     },
     {
-      heading: '5. Your Rights',
-      paragraphs: ['You may:'],
-      bullets: ['Request access to your data', 'Request correction or deletion', 'Withdraw consent at any time'],
-      afterBullets: ['To request this, contact us via email.'],
-    },
-    {
-      heading: '6. Cookies and Tracking',
+      heading: '6. Data Retention',
       paragraphs: [
-        'We do not use tracking technologies for cross-app or third-party advertising purposes.',
-        'Basic technical cookies or similar tools may be used only to ensure app functionality.',
+        'We keep your account data for as long as your account exists. Verification and password-reset codes are short-lived and are deleted after they expire or are used.',
+        'When you delete your account, your account and its associated data are permanently removed from our servers. Backups, if any, are overwritten on a rolling basis. We may retain limited information where required to comply with legal obligations or resolve disputes.',
       ],
     },
     {
-      heading: '7. Third-Party Services',
-      paragraphs: ['Our app may use limited third-party services necessary for operation (such as hosting). These providers process data only on our behalf.'],
+      heading: '7. Security',
+      paragraphs: [
+        'Data is transmitted over encrypted connections (HTTPS/TLS) and stored on access-controlled servers. Passwords are hashed with a strong one-way algorithm and cannot be reversed.',
+        'No method of transmission or storage is completely secure. While we take reasonable measures to protect your data, we cannot guarantee absolute security.',
+      ],
     },
     {
-      heading: "8. Children's Privacy",
-      paragraphs: ['Velis is not intended for users under 13. We do not knowingly collect data from children.'],
+      heading: '8. Your Rights',
+      paragraphs: ['Depending on where you live, you may have the right to:'],
+      bullets: [
+        'Access the personal data we hold about you',
+        'Correct inaccurate or incomplete data',
+        'Delete your data (see "Deleting Your Account" below)',
+        'Object to or restrict certain processing',
+        'Withdraw consent for optional processing at any time',
+        'Receive a copy of your data in a portable format',
+        'Lodge a complaint with your local data-protection authority',
+      ],
+      afterBullets: ['To exercise any of these rights, contact us at contact@forsvelis.com. We will respond within the time required by applicable law.'],
     },
     {
-      heading: '9. Future Features',
-      paragraphs: ['If new features (such as payments) are introduced in the future, this Privacy Policy will be updated accordingly.'],
+      heading: '9. Deleting Your Account',
+      paragraphs: [
+        'You can delete your account at any time from within the app: Profile → Settings → Account → Delete Account. This permanently removes your account and its data from our servers and cannot be undone.',
+      ],
     },
     {
-      heading: '10. Changes to This Policy',
-      paragraphs: ['We may update this Privacy Policy. Continued use of the app means you accept the updated version.'],
+      heading: "10. Children's Privacy",
+      paragraphs: [
+        'Velis is not intended for and may not be used by anyone under 13 years of age. During sign-up we ask for your date of birth and do not allow accounts for users under 13. We do not knowingly collect personal data from children under 13. If you believe a child has provided us with personal data, contact us and we will delete it.',
+      ],
     },
     {
-      heading: '11. Contact',
-      paragraphs: ['Email: contact@forsvelis.com'],
+      heading: '11. Cookies and Similar Technologies',
+      paragraphs: [
+        'Velis does not use advertising or cross-app tracking technologies. The app uses local device storage only to keep you signed in and to remember your settings and offline progress.',
+      ],
+    },
+    {
+      heading: '12. Changes to This Policy',
+      paragraphs: [
+        'We may update this Privacy Policy from time to time. If we make material changes, we will update the "Last Updated" date and, where appropriate, notify you in the app. Continued use of Velis after an update means you accept the revised policy.',
+      ],
+    },
+    {
+      heading: '13. Contact',
+      paragraphs: ['If you have any questions about this Privacy Policy or your data, contact us at contact@forsvelis.com.'],
     },
   ],
 }
@@ -204,80 +247,119 @@ const PRIVACY_POLICY_TR: LegalDocument = {
   title: 'Gizlilik Politikası',
   lastUpdated: 'Son Güncelleme: 30 Ağustos 2026',
   intro: [
-    'Velis ("biz", "bizim" veya "bize") gizliliğinize saygı duyar. Bu Gizlilik Politikası, uygulamamızı kullanırken bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.',
-    "Velis'i kullanarak bu Gizlilik Politikasını kabul etmiş olursunuz.",
+    'Velis ("Velis", "biz", "bizim" veya "bize") gizliliğinize saygı duyar. Bu Gizlilik Politikası; Velis mobil uygulamasını kullandığınızda hangi bilgileri topladığımızı, neden topladığımızı, verilerinizin nasıl saklanıp paylaşıldığını ve sahip olduğunuz seçim ve hakları açıklar.',
+    'Hesap oluşturarak veya Velis\'i kullanarak bu Gizlilik Politikasını kabul etmiş olursunuz. Kabul etmiyorsanız lütfen uygulamayı kullanmayın.',
   ],
   sections: [
     {
       heading: '1. Topladığımız Bilgiler',
-      paragraphs: ['Hizmetimizi sunmak için yalnızca gerekli olan bilgileri topluyoruz:'],
+      paragraphs: ['Yalnızca uygulamayı ve hesabınızı çalıştırmak için gereken bilgileri topluyoruz.', 'Hesap oluştururken verdiğiniz bilgiler:'],
       bullets: [
-        'Hesap oluştururken verdiğiniz adınız ve e-posta adresiniz',
-        'Şifreniz — yalnızca tek yönlü şifrelenmiş bir özet (hash) olarak saklanır; gerçek şifrenizi hiçbir zaman saklamayız veya göremeyiz',
-        'Uygulamadaki ilerlemeniz (yolculuk günü, seri, XP, ritüel sayısı ve süresi) — cihazlarınız arasında senkronlanabilmesi için',
-        'Dil ve bildirim tercihleriniz',
-        'Hesabınızın oluşturulma tarihi gibi temel hesap bilgileri',
+        'Ad',
+        'E-posta adresi',
+        'Cinsiyet (Kadın / Erkek / Diğer / Belirtmek istemiyorum)',
+        'Doğum tarihi (en az 13 yaşında olduğunuzu doğrulamak için kullanılır)',
+        'Şifre — yalnızca tek yönlü kriptografik bir özet (hash) olarak saklanır. Gerçek şifrenizi hiçbir zaman saklamayız, göremeyiz ve geri döndürmemizin hiçbir yolu yoktur.',
       ],
-      afterBullets: ['Uygulamanın çekirdek özelliklerini hesap oluşturmadan kullanabilirsiniz; bu durumda ilerlemeniz yalnızca cihazınızda kalır.'],
+      afterBullets: [
+        'Uygulamayı kullandıkça oluşan bilgiler: uygulama içi ilerlemeniz ve etkinliğiniz — yolculuk günü, mevcut seri, toplam XP, tamamlanan ritüel sayısı, toplam ritüel süresi ve ödül alma geçmişiniz. Giriş yaptıysanız bu veriler, cihazlarınız arasında senkronlanabilmesi için sunucularımızda saklanır.',
+        'Tercihler: seçtiğiniz dil ve bildirim ayarları.',
+        'Hesap bilgileri: hesabınızın oluşturulma tarihi ve güvenlik amacıyla bazı hesap olaylarının zaman damgaları.',
+        'Velis\'in çekirdek özelliklerini (ritüel, yolculuk, yerel ilerleme) hesap oluşturmadan kullanabilirsiniz. Bu durumda ilerlemeniz yalnızca cihazınızda kalır ve bize gönderilmez.',
+      ],
     },
     {
       heading: '2. Bilgilerinizi Nasıl Kullanıyoruz',
       paragraphs: ['Bilgilerinizi şu amaçlarla kullanırız:'],
       bullets: [
-        'Uygulamayı sağlamak, işletmek ve ilerlemenizi cihazlar arasında senkronlamak',
-        'Devre dışı bırakmadığınız hesap ve hatırlatma e-postalarını göndermek',
-        'Güvenliği sağlamak ve kötüye kullanımı önlemek',
-        'Uygulamanın nasıl kullanıldığını anlayıp geliştirmek',
+        'Hesabınızı oluşturmak, işletmek ve giriş yaptığınızda kimliğinizi doğrulamak',
+        'İlerlemenizi kaydetmek ve cihazlarınız arasında senkronlamak',
+        'Kayıtlı kullanıcıları seri ve XP\'ye göre sıralayan liderlik tablosunu göstermek (adınız ve istatistikleriniz orada diğer kullanıcılara görünür; e-posta adresiniz asla gösterilmez)',
+        'Hesapla ilgili e-postaları (doğrulama kodları, şifre sıfırlama) ve kapatmadığınız ritüel hatırlatma e-postalarını göndermek',
+        'Hizmeti güvende tutmak, kötüye kullanımı önlemek ve sorunları gidermek',
+        'Uygulamanın nasıl kullanıldığını genel/toplu olarak anlayıp geliştirmek',
       ],
-      afterBullets: ['Ekibimizin yetkili üyeleri; destek, moderasyon veya güvenlik amacıyla gerektiğinde hesap verilerine (şifreler hariç) erişebilir.'],
+      afterBullets: [
+        'Verilerinizi reklam amacıyla kullanmayız ve satmayız.',
+        'Ekibimizin yetkili üyeleri; destek, moderasyon, güvenlik veya yasal uyum için makul ölçüde gerekli olduğunda hesap verilerine (şifreler hariç) erişebilir.',
+      ],
     },
     {
-      heading: '3. Veri Paylaşımı',
-      paragraphs: ['Kişisel verilerinizi satmayız veya kiralamayız.', 'Verileri yalnızca şu durumlarda paylaşırız:'],
+      heading: '3. İşlemenin Hukuki Dayanakları',
+      paragraphs: [
+        'Türk KVKK veya AB/İngiltere GDPR gibi veri koruma mevzuatının uygulandığı durumlarda kişisel verilerinizi şu dayanaklarla işleriz: sizinle olan sözleşmemizin ifası (uygulamayı ve hesabınızı sağlamak); açık rızanız (Ayarlar\'dan istediğiniz zaman geri çekebileceğiniz isteğe bağlı hatırlatma e-postaları için); ve haklarınızla dengelenmiş meşru menfaatlerimiz (hizmeti güvende tutmak ve geliştirmek).',
+      ],
+    },
+    {
+      heading: '4. Paylaşım ve Açıklama',
+      paragraphs: ['Kişisel verilerinizi satmaz veya kiralamayız. Verilerinizi yalnızca şu durumlarda paylaşırız:'],
       bullets: [
-        'Uygulamayı çalıştırmak için verileri bizim adımıza işleyen hizmet sağlayıcılarla — barındırma, veritabanı ve e-posta gönderimi',
-        'Yasal olarak zorunlu olduğunda',
+        'Velis\'i çalıştırmak için verileri bizim adımıza işleyen hizmet sağlayıcılar: uygulama barındırma, veritabanı barındırma, işlemsel e-posta gönderimi ve (telefon numarası doğrularsanız) SMS gönderimi. Bu sağlayıcılar verileri yalnızca bize hizmet sunmak için kullanabilir.',
+        'Yasal gereklilikler: yasa, hukuki süreç veya geçerli bir resmi talep gereği veya Velis\'in, kullanıcılarının ya da kamunun haklarını, güvenliğini veya mülkiyetini korumak için veri açıklamamız gerekirse.',
+        'İşletme devri: Velis bir birleşme, satın alma veya varlık satışına dahil olursa verileriniz bu işlemin parçası olarak devredilebilir; verilerinizin işlenme şeklini esaslı biçimde değiştirirse sizi bilgilendiririz.',
       ],
     },
     {
-      heading: '4. Veri Depolama ve Güvenlik',
+      heading: '5. Verilerinizin İşlendiği Yer',
       paragraphs: [
-        'Veriler şifreli bağlantılar (HTTPS) üzerinden aktarılır ve güvenli sunucularda saklanır. Şifreler hash\'lenir ve geri döndürülemez.',
-        'Verileriniz yalnızca hizmeti sağlamak veya yasal yükümlülüklere uymak için gerekli olduğu sürece saklanır. Hesabınızı sildiğinizde, hesap verileriniz sunucularımızdan kalıcı olarak kaldırılır.',
+        'Sunucularımız ve bazı hizmet sağlayıcılarımız, Avrupa Birliği ve Amerika Birleşik Devletleri dahil olmak üzere ülkenizin dışında bulunur. Verileriniz uluslararası aktarıldığında, ilgili mevzuatın gerektirdiği uygun güvencelere dayanırız.',
       ],
     },
     {
-      heading: '5. Haklarınız',
-      paragraphs: ['Şunları yapabilirsiniz:'],
-      bullets: ['Verilerinize erişim talep etmek', 'Düzeltme veya silme talep etmek', 'Rızanızı istediğiniz zaman geri çekmek'],
-      afterBullets: ['Bu talepler için bizimle e-posta yoluyla iletişime geçebilirsiniz.'],
-    },
-    {
-      heading: '6. Çerezler ve Takip',
+      heading: '6. Veri Saklama',
       paragraphs: [
-        'Uygulamalar arası veya üçüncü taraf reklamcılık amacıyla takip teknolojileri kullanmıyoruz.',
-        'Yalnızca uygulama işlevselliğini sağlamak amacıyla temel teknik çerezler veya benzeri araçlar kullanılabilir.',
+        'Hesap verilerinizi hesabınız var olduğu sürece saklarız. Doğrulama ve şifre sıfırlama kodları kısa ömürlüdür; süresi dolduğunda veya kullanıldığında silinir.',
+        'Hesabınızı sildiğinizde, hesabınız ve ilişkili verileriniz sunucularımızdan kalıcı olarak kaldırılır. Varsa yedekler dönüşümlü olarak üzerine yazılır. Yasal yükümlülüklere uymak veya uyuşmazlıkları çözmek için gereken sınırlı bilgiyi saklayabiliriz.',
       ],
     },
     {
-      heading: '7. Üçüncü Taraf Hizmetleri',
-      paragraphs: ['Uygulamamız, işletim için gerekli olan sınırlı sayıda üçüncü taraf hizmeti kullanabilir (barındırma gibi). Bu sağlayıcılar verileri yalnızca bizim adımıza işler.'],
+      heading: '7. Güvenlik',
+      paragraphs: [
+        'Veriler şifreli bağlantılar (HTTPS/TLS) üzerinden aktarılır ve erişimi kontrollü sunucularda saklanır. Şifreler güçlü, tek yönlü bir algoritmayla hash\'lenir ve geri döndürülemez.',
+        'Hiçbir aktarım veya saklama yöntemi tamamen güvenli değildir. Verilerinizi korumak için makul önlemler alsak da mutlak güvenliği garanti edemeyiz.',
+      ],
     },
     {
-      heading: '8. Çocukların Gizliliği',
-      paragraphs: ['Velis, 13 yaşın altındaki kullanıcılar için tasarlanmamıştır. Çocuklardan bilerek veri toplamıyoruz.'],
+      heading: '8. Haklarınız',
+      paragraphs: ['Yaşadığınız yere bağlı olarak şu haklara sahip olabilirsiniz:'],
+      bullets: [
+        'Hakkınızda tuttuğumuz kişisel verilere erişmek',
+        'Yanlış veya eksik verileri düzelttirmek',
+        'Verilerinizi sildirmek (aşağıdaki "Hesabınızı Silme" bölümüne bakın)',
+        'Belirli işlemelere itiraz etmek veya işlemeyi kısıtlatmak',
+        'İsteğe bağlı işlemeler için rızanızı istediğiniz zaman geri çekmek',
+        'Verilerinizin taşınabilir bir kopyasını almak',
+        'Yerel veri koruma otoritenize şikâyette bulunmak',
+      ],
+      afterBullets: ['Bu haklardan herhangi birini kullanmak için contact@forsvelis.com adresinden bize ulaşın. İlgili mevzuatın gerektirdiği süre içinde yanıt veririz.'],
     },
     {
-      heading: '9. Gelecekteki Özellikler',
-      paragraphs: ['Gelecekte yeni özellikler (ödemeler gibi) sunulursa, bu Gizlilik Politikası buna göre güncellenecektir.'],
+      heading: '9. Hesabınızı Silme',
+      paragraphs: [
+        'Hesabınızı istediğiniz zaman uygulama içinden silebilirsiniz: Profil → Ayarlar → Hesap → Hesabı Sil. Bu işlem, hesabınızı ve verilerinizi sunucularımızdan kalıcı olarak kaldırır ve geri alınamaz.',
+      ],
     },
     {
-      heading: '10. Bu Politikadaki Değişiklikler',
-      paragraphs: ['Bu Gizlilik Politikasını güncelleyebiliriz. Uygulamayı kullanmaya devam etmeniz, güncellenmiş sürümü kabul ettiğiniz anlamına gelir.'],
+      heading: '10. Çocukların Gizliliği',
+      paragraphs: [
+        'Velis, 13 yaşın altındaki hiç kimse için tasarlanmamıştır ve onlar tarafından kullanılamaz. Kayıt sırasında doğum tarihinizi sorarız ve 13 yaşın altındaki kullanıcılar için hesap açılmasına izin vermeyiz. 13 yaşın altındaki çocuklardan bilerek kişisel veri toplamıyoruz. Bir çocuğun bize kişisel veri verdiğini düşünüyorsanız bizimle iletişime geçin, veriyi sileriz.',
+      ],
     },
     {
-      heading: '11. İletişim',
-      paragraphs: ['E-posta: contact@forsvelis.com'],
+      heading: '11. Çerezler ve Benzer Teknolojiler',
+      paragraphs: [
+        'Velis, reklam veya uygulamalar arası takip teknolojileri kullanmaz. Uygulama, yalnızca sizi oturumda tutmak ve ayarlarınız ile çevrimdışı ilerlemenizi hatırlamak için cihazınızdaki yerel depolamayı kullanır.',
+      ],
+    },
+    {
+      heading: '12. Bu Politikadaki Değişiklikler',
+      paragraphs: [
+        'Bu Gizlilik Politikasını zaman zaman güncelleyebiliriz. Esaslı değişiklikler yaparsak "Son Güncelleme" tarihini güncelleriz ve uygun olduğunda sizi uygulama içinde bilgilendiririz. Bir güncellemeden sonra Velis\'i kullanmaya devam etmeniz, revize edilmiş politikayı kabul ettiğiniz anlamına gelir.',
+      ],
+    },
+    {
+      heading: '13. İletişim',
+      paragraphs: ['Bu Gizlilik Politikası veya verileriniz hakkında sorularınız varsa contact@forsvelis.com adresinden bize ulaşın.'],
     },
   ],
 }

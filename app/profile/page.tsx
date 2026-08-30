@@ -21,6 +21,7 @@ import LegalReader from '../LegalReader'
 import OtpStep from '../OtpStep'
 import ForgotPasswordFlow from '../ForgotPasswordFlow'
 import DevPanel from '../devpanel/DevPanel'
+import DateWheelField from '../DateWheelField'
 import { useRouter } from 'next/navigation'
 import { FONT_SANS } from '../lib/typography'
 import { isDev } from '../constants/env'
@@ -292,6 +293,174 @@ function FieldInput({
   )
 }
 
+// FieldInput ile AYNI görsel kabuk (label/border/hata) - sadece native
+// Seçim alanı (Gender). Yerli <select> yerine VELIS temalı bir bottom-sheet
+// açıyor - iOS'un beyaz/sistem picker'ı koyu premium arayüzde yamalı
+// duruyordu ("Almost Done" sheet'iyle aynı görsel dil, bkz. aşağısı).
+function SelectField({
+  label,
+  value,
+  onChange,
+  onBlur,
+  options,
+  placeholder,
+  triggerRef,
+  error,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  onBlur: () => void
+  options: { value: string; label: string }[]
+  placeholder: string
+  triggerRef?: RefObject<HTMLButtonElement | null>
+  error?: string | null
+}) {
+  const [open, setOpen] = useState(false)
+  const selectedLabel = options.find((o) => o.value === value)?.label
+
+  const close = () => {
+    setOpen(false)
+    onBlur()
+  }
+
+  return (
+    <div style={{ width: '100%' }}>
+      <label style={{ display: 'block', fontFamily: FONT_SANS, fontWeight: 500, fontSize: '12px', color: '#9A948C', marginBottom: '8px' }}>
+        {label}
+      </label>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          width: '100%',
+          boxSizing: 'border-box',
+          padding: '13px 16px',
+          borderRadius: '14px',
+          border: error ? '1px solid rgba(255, 130, 100, 0.5)' : open ? '1px solid rgba(255, 178, 90, 0.55)' : '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: open && !error ? '0 0 0 3px rgba(255, 178, 90, 0.1)' : 'none',
+          background: 'rgba(255, 255, 255, 0.03)',
+          color: selectedLabel ? '#F5F0EA' : 'rgba(245, 240, 234, 0.4)',
+          fontFamily: FONT_SANS,
+          fontWeight: 400,
+          fontSize: '16px',
+          textAlign: 'left',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
+          transition: 'border 200ms ease-out, box-shadow 200ms ease-out',
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedLabel ?? placeholder}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <path d="M6 9L12 15L18 9" stroke="#9A948C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <div
+        style={{
+          marginTop: error ? '6px' : 0,
+          maxHeight: error ? '20px' : 0,
+          overflow: 'hidden',
+          opacity: error ? 1 : 0,
+          transition: 'opacity 250ms ease-in-out, max-height 250ms ease-in-out, margin-top 250ms ease-in-out',
+        }}
+      >
+        <div style={{ fontFamily: FONT_SANS, fontSize: '12px', color: 'rgba(255, 150, 120, 0.85)' }}>{error}</div>
+      </div>
+
+      {open && (
+        <div
+          onClick={close}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 70,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.55)',
+          }}
+        >
+          <div
+            className="velis-sheet--slide-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              background: '#0B0B0B',
+              borderTopLeftRadius: '28px',
+              borderTopRightRadius: '28px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderBottom: 'none',
+              boxShadow: '0 -20px 60px rgba(0, 0, 0, 0.5)',
+              padding: '10px 14px calc(18px + env(safe-area-inset-bottom))',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+            }}
+          >
+            <div style={{ width: '36px', height: '5px', borderRadius: '999px', background: 'rgba(255, 255, 255, 0.2)', margin: '8px auto 14px' }} />
+            <div
+              style={{
+                fontFamily: FONT_SANS,
+                fontWeight: 600,
+                fontSize: '12px',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                color: '#9A948C',
+                textAlign: 'center',
+                padding: '0 8px 8px',
+              }}
+            >
+              {label}
+            </div>
+            {options.map((opt) => {
+              const isSel = opt.value === value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value)
+                    close()
+                  }}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '15px 14px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: isSel ? 'rgba(255, 178, 90, 0.1)' : 'transparent',
+                    color: isSel ? '#F3CE8E' : '#F5F0EA',
+                    fontFamily: FONT_SANS,
+                    fontWeight: isSel ? 600 : 400,
+                    fontSize: '16px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {opt.label}
+                  {isSel && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13L9 17L19 7" stroke="#F3CE8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function formatDuration(sec: number) {
   if (sec < 60) return `${sec} sec`
   const minutes = Math.floor(sec / 60)
@@ -379,6 +548,8 @@ export default function Profile() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [gender, setGender] = useState('')
+  const [birthDate, setBirthDate] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
@@ -398,6 +569,8 @@ export default function Profile() {
 
   const lastNameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
+  const genderRef = useRef<HTMLButtonElement>(null)
+  const birthDateRef = useRef<HTMLButtonElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -439,10 +612,12 @@ export default function Profile() {
     return () => cancelAnimationFrame(raf)
   }, [displayPhase])
 
-  const { firstNameValid, lastNameValid, emailValid, passwordValid, formValid } = validateSignupForm({
+  const { firstNameValid, lastNameValid, emailValid, genderValid, birthDateValid, passwordValid, formValid } = validateSignupForm({
     firstName,
     lastName,
     email,
+    gender,
+    birthDate,
     password,
   })
   const passwordRules = getPasswordRuleStatus(password)
@@ -530,7 +705,8 @@ export default function Profile() {
         password,
         undefined,
         getStoredStats(),
-        locale
+        locale,
+        { gender: gender || undefined, birthDate: birthDate || undefined }
       )
       saveToken(result.token)
       finishAuth(
@@ -717,7 +893,8 @@ export default function Profile() {
               onKeyDown={(e) => {
                 if (e.key !== 'Enter') return
                 e.preventDefault()
-                passwordRef.current?.focus()
+                if (mode === 'create') genderRef.current?.focus()
+                else passwordRef.current?.focus()
               }}
               type="email"
               enterKeyHint="next"
@@ -732,6 +909,34 @@ export default function Profile() {
                   : null
               }
             />
+            {mode === 'create' && (
+              <>
+                <SelectField
+                  label={t('profile.field.gender')}
+                  value={gender}
+                  onChange={(v) => setGender(v)}
+                  onBlur={() => markTouched('gender')}
+                  options={[
+                    { value: 'Female', label: t('profile.gender.female') },
+                    { value: 'Male', label: t('profile.gender.male') },
+                    { value: 'Other', label: t('profile.gender.other') },
+                    { value: 'Prefer not to say', label: t('profile.gender.preferNotToSay') },
+                  ]}
+                  placeholder={t('profile.field.genderPlaceholder')}
+                  triggerRef={genderRef}
+                  error={touched.gender && !genderValid ? t('profile.error.gender') : null}
+                />
+                <DateWheelField
+                  label={t('profile.field.birthDate')}
+                  value={birthDate}
+                  onChange={(v) => setBirthDate(v)}
+                  onBlur={() => markTouched('birthDate')}
+                  placeholder={t('profile.field.birthDatePlaceholder')}
+                  triggerRef={birthDateRef}
+                  error={touched.birthDate && !birthDateValid ? t('profile.error.birthDate') : null}
+                />
+              </>
+            )}
             <div>
               <FieldInput
                 label={t('profile.field.password')}

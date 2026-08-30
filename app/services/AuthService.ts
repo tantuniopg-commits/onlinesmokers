@@ -43,12 +43,16 @@ export type SignupFormInput = {
   firstName: string
   lastName: string
   email: string
+  gender: string
+  birthDate: string
   password: string
 }
 export type SignupFormValidity = {
   firstNameValid: boolean
   lastNameValid: boolean
   emailValid: boolean
+  genderValid: boolean
+  birthDateValid: boolean
   passwordValid: boolean
   formValid: boolean
 }
@@ -80,13 +84,27 @@ export function validateSignupForm(input: SignupFormInput): SignupFormValidity {
   const firstNameValid = input.firstName.trim().length > 0
   const lastNameValid = input.lastName.trim().length > 0
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())
+  const genderValid = input.gender.trim().length > 0
+  // Doğum tarihi geçmişte olmalı VE kullanıcı en az 13 yaşında olmalı
+  // (COPPA / Gizlilik Politikası "13 yaş altı için değildir"). Tarih seçici
+  // zaten 13'ten küçüğü seçtirmiyor - bu, kesin kural.
+  const birthDateValid = (() => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.birthDate)) return false
+    const dob = new Date(input.birthDate)
+    if (Number.isNaN(dob.getTime()) || dob >= new Date()) return false
+    const thirteenAgo = new Date()
+    thirteenAgo.setFullYear(thirteenAgo.getFullYear() - 13)
+    return dob <= thirteenAgo
+  })()
   const passwordValid = isPasswordValid(input.password)
   return {
     firstNameValid,
     lastNameValid,
     emailValid,
+    genderValid,
+    birthDateValid,
     passwordValid,
-    formValid: firstNameValid && lastNameValid && emailValid && passwordValid,
+    formValid: firstNameValid && lastNameValid && emailValid && genderValid && birthDateValid && passwordValid,
   }
 }
 
