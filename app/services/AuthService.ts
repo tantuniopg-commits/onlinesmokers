@@ -43,16 +43,12 @@ export type SignupFormInput = {
   firstName: string
   lastName: string
   email: string
-  gender: string
-  birthDate: string
   password: string
 }
 export type SignupFormValidity = {
   firstNameValid: boolean
   lastNameValid: boolean
   emailValid: boolean
-  genderValid: boolean
-  birthDateValid: boolean
   passwordValid: boolean
   formValid: boolean
 }
@@ -84,17 +80,13 @@ export function validateSignupForm(input: SignupFormInput): SignupFormValidity {
   const firstNameValid = input.firstName.trim().length > 0
   const lastNameValid = input.lastName.trim().length > 0
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())
-  const genderValid = input.gender.trim().length > 0
-  const birthDateValid = /^\d{4}-\d{2}-\d{2}$/.test(input.birthDate) && new Date(input.birthDate) < new Date()
   const passwordValid = isPasswordValid(input.password)
   return {
     firstNameValid,
     lastNameValid,
     emailValid,
-    genderValid,
-    birthDateValid,
     passwordValid,
-    formValid: firstNameValid && lastNameValid && emailValid && genderValid && birthDateValid && passwordValid,
+    formValid: firstNameValid && lastNameValid && emailValid && passwordValid,
   }
 }
 

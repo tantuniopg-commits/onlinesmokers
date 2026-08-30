@@ -80,8 +80,6 @@ export default function UserDatabaseSection() {
 
               <Field label="Email" value={u.email} />
               {u.phone && <Field label="Phone" value={u.phone} />}
-              <Field label="Gender" value={u.gender || '—'} />
-              <Field label="Birth date" value={u.birthDate || '—'} />
               <Field label="Language" value={(u.locale || 'en').toUpperCase()} />
 
               <div style={{ height: '1px', background: colors.cardBorder, margin: '3px 0' }} />

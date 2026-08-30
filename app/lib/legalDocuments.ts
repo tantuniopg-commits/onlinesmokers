@@ -1,8 +1,10 @@
-// Forsvelis Privacy Policy / Terms of Service - içerik burada tek yerden
+// Velis Privacy Policy / Terms of Service - içerik burada tek yerden
 // geliyor (bkz. app/profile/page.tsx doküman okuyucusu, app/profile/settings/
-// privacy/page.tsx). Metin kaynak PDF'lerden BİREBİR alındı, hiç
-// değiştirilmedi. EN/TR ayrı kaynak metinler - getTermsOfService/
+// privacy/page.tsx). EN/TR ayrı kaynak metinler - getTermsOfService/
 // getPrivacyPolicy o anki locale'e göre doğru olanı döndürüyor.
+// Gizlilik Politikası "Topladığımız Bilgiler" bölümü uygulamanın gerçekten
+// sakladığı verilerle (ad, e-posta, hash'li şifre, ilerleme, tercihler)
+// eşleşecek şekilde güncellendi (2026-08-30).
 
 export type LegalSection = {
   heading: string
@@ -20,12 +22,12 @@ export type LegalDocument = {
 
 const TERMS_OF_SERVICE_EN: LegalDocument = {
   title: 'Terms of Service',
-  lastUpdated: 'Last Updated: August 17, 2026',
-  intro: ['By using Forsvelis, you agree to these Terms of Service.'],
+  lastUpdated: 'Last Updated: August 30, 2026',
+  intro: ['By using Velis, you agree to these Terms of Service.'],
   sections: [
     {
       heading: '1. Use of the App',
-      paragraphs: ['You agree to use Forsvelis only for lawful purposes and in a way that does not harm the app or other users.'],
+      paragraphs: ['You agree to use Velis only for lawful purposes and in a way that does not harm the app or other users.'],
     },
     {
       heading: '2. Accounts',
@@ -38,7 +40,7 @@ const TERMS_OF_SERVICE_EN: LegalDocument = {
     },
     {
       heading: '4. Intellectual Property',
-      paragraphs: ['All content and features of Forsvelis belong to us. You may not copy or distribute them without permission.'],
+      paragraphs: ['All content and features of Velis belong to us. You may not copy or distribute them without permission.'],
     },
     {
       heading: '5. Termination',
@@ -46,7 +48,7 @@ const TERMS_OF_SERVICE_EN: LegalDocument = {
     },
     {
       heading: '6. Disclaimer',
-      paragraphs: ['Forsvelis is provided "as is" without warranties of any kind.'],
+      paragraphs: ['Velis is provided "as is" without warranties of any kind.'],
     },
     {
       heading: '7. Limitation of Liability',
@@ -69,12 +71,12 @@ const TERMS_OF_SERVICE_EN: LegalDocument = {
 
 const TERMS_OF_SERVICE_TR: LegalDocument = {
   title: 'Kullanım Koşulları',
-  lastUpdated: 'Son Güncelleme: 17 Ağustos 2026',
-  intro: ["Forsvelis'i kullanarak bu Kullanım Koşullarını kabul etmiş olursunuz."],
+  lastUpdated: 'Son Güncelleme: 30 Ağustos 2026',
+  intro: ["Velis'i kullanarak bu Kullanım Koşullarını kabul etmiş olursunuz."],
   sections: [
     {
       heading: '1. Uygulamanın Kullanımı',
-      paragraphs: ["Forsvelis'i yalnızca yasal amaçlarla ve uygulamaya veya diğer kullanıcılara zarar vermeyecek şekilde kullanmayı kabul edersiniz."],
+      paragraphs: ["Velis'i yalnızca yasal amaçlarla ve uygulamaya veya diğer kullanıcılara zarar vermeyecek şekilde kullanmayı kabul edersiniz."],
     },
     {
       heading: '2. Hesaplar',
@@ -87,7 +89,7 @@ const TERMS_OF_SERVICE_TR: LegalDocument = {
     },
     {
       heading: '4. Fikri Mülkiyet',
-      paragraphs: ["Forsvelis'in tüm içeriği ve özellikleri bize aittir. İzin almadan bunları kopyalayamaz veya dağıtamazsınız."],
+      paragraphs: ["Velis'in tüm içeriği ve özellikleri bize aittir. İzin almadan bunları kopyalayamaz veya dağıtamazsınız."],
     },
     {
       heading: '5. Fesih',
@@ -95,7 +97,7 @@ const TERMS_OF_SERVICE_TR: LegalDocument = {
     },
     {
       heading: '6. Sorumluluk Reddi',
-      paragraphs: ['Forsvelis, herhangi bir garanti verilmeksizin "olduğu gibi" sunulmaktadır.'],
+      paragraphs: ['Velis, herhangi bir garanti verilmeksizin "olduğu gibi" sunulmaktadır.'],
     },
     {
       heading: '7. Sorumluluğun Sınırlandırılması',
@@ -118,32 +120,48 @@ const TERMS_OF_SERVICE_TR: LegalDocument = {
 
 const PRIVACY_POLICY_EN: LegalDocument = {
   title: 'Privacy Policy',
-  lastUpdated: 'Last Updated: August 17, 2026',
+  lastUpdated: 'Last Updated: August 30, 2026',
   intro: [
-    'Forsvelis ("we", "our", or "us") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our application.',
-    'By using Forsvelis, you agree to this Privacy Policy.',
+    'Velis ("we", "our", or "us") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our application.',
+    'By using Velis, you agree to this Privacy Policy.',
   ],
   sections: [
     {
       heading: '1. Information We Collect',
       paragraphs: ['We collect only the information necessary to provide our service:'],
-      bullets: ['Email address', 'Username or basic account information'],
+      bullets: [
+        'Your name and email address, provided when you create an account',
+        'Your password, which is stored only as a one-way encrypted hash — we never store or see your actual password',
+        'Your progress in the app (journey day, streak, XP, ritual count and duration), so it can sync across your devices',
+        'Your language and notification preferences',
+        'Basic account metadata such as the date your account was created',
+      ],
+      afterBullets: ['You can use the core features of the app without creating an account; in that case your progress stays on your device only.'],
     },
     {
       heading: '2. How We Use Your Information',
       paragraphs: ['We use your information to:'],
-      bullets: ['Provide and operate the app', 'Improve user experience', 'Communicate with you when necessary', 'Ensure security and prevent misuse'],
+      bullets: [
+        'Provide and operate the app and sync your progress across devices',
+        'Send account and reminder emails you have not opted out of',
+        'Ensure security and prevent misuse',
+        'Understand how the app is used so we can improve it',
+      ],
+      afterBullets: ['Authorized members of our team may access account data (never passwords) when needed for support, moderation, or security.'],
     },
     {
       heading: '3. Data Sharing',
-      paragraphs: ['We do not sell or rent your personal data.', 'We may share data only:'],
-      bullets: ['With trusted service providers (e.g. hosting)', 'If required by law'],
+      paragraphs: ['We do not sell or rent your personal data.', 'We share data only:'],
+      bullets: [
+        'With service providers who process it on our behalf to run the app — hosting, database, and email delivery',
+        'If required by law',
+      ],
     },
     {
       heading: '4. Data Storage and Security',
       paragraphs: [
-        'We use reasonable technical measures to protect your data.',
-        'Your data is kept only as long as necessary to provide the service or comply with legal obligations.',
+        'Data is transmitted over encrypted connections (HTTPS) and stored on secured servers. Passwords are hashed and are not recoverable.',
+        'Your data is kept only as long as necessary to provide the service or comply with legal obligations. When you delete your account, your account data is permanently removed from our servers.',
       ],
     },
     {
@@ -165,7 +183,7 @@ const PRIVACY_POLICY_EN: LegalDocument = {
     },
     {
       heading: "8. Children's Privacy",
-      paragraphs: ['Forsvelis is not intended for users under 13. We do not knowingly collect data from children.'],
+      paragraphs: ['Velis is not intended for users under 13. We do not knowingly collect data from children.'],
     },
     {
       heading: '9. Future Features',
@@ -184,32 +202,48 @@ const PRIVACY_POLICY_EN: LegalDocument = {
 
 const PRIVACY_POLICY_TR: LegalDocument = {
   title: 'Gizlilik Politikası',
-  lastUpdated: 'Son Güncelleme: 17 Ağustos 2026',
+  lastUpdated: 'Son Güncelleme: 30 Ağustos 2026',
   intro: [
-    'Forsvelis ("biz", "bizim" veya "bize") gizliliğinize saygı duyar. Bu Gizlilik Politikası, uygulamamızı kullanırken bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.',
-    "Forsvelis'i kullanarak bu Gizlilik Politikasını kabul etmiş olursunuz.",
+    'Velis ("biz", "bizim" veya "bize") gizliliğinize saygı duyar. Bu Gizlilik Politikası, uygulamamızı kullanırken bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.',
+    "Velis'i kullanarak bu Gizlilik Politikasını kabul etmiş olursunuz.",
   ],
   sections: [
     {
       heading: '1. Topladığımız Bilgiler',
       paragraphs: ['Hizmetimizi sunmak için yalnızca gerekli olan bilgileri topluyoruz:'],
-      bullets: ['E-posta adresi', 'Kullanıcı adı veya temel hesap bilgileri'],
+      bullets: [
+        'Hesap oluştururken verdiğiniz adınız ve e-posta adresiniz',
+        'Şifreniz — yalnızca tek yönlü şifrelenmiş bir özet (hash) olarak saklanır; gerçek şifrenizi hiçbir zaman saklamayız veya göremeyiz',
+        'Uygulamadaki ilerlemeniz (yolculuk günü, seri, XP, ritüel sayısı ve süresi) — cihazlarınız arasında senkronlanabilmesi için',
+        'Dil ve bildirim tercihleriniz',
+        'Hesabınızın oluşturulma tarihi gibi temel hesap bilgileri',
+      ],
+      afterBullets: ['Uygulamanın çekirdek özelliklerini hesap oluşturmadan kullanabilirsiniz; bu durumda ilerlemeniz yalnızca cihazınızda kalır.'],
     },
     {
       heading: '2. Bilgilerinizi Nasıl Kullanıyoruz',
       paragraphs: ['Bilgilerinizi şu amaçlarla kullanırız:'],
-      bullets: ['Uygulamayı sağlamak ve işletmek', 'Kullanıcı deneyimini geliştirmek', 'Gerektiğinde sizinle iletişim kurmak', 'Güvenliği sağlamak ve kötüye kullanımı önlemek'],
+      bullets: [
+        'Uygulamayı sağlamak, işletmek ve ilerlemenizi cihazlar arasında senkronlamak',
+        'Devre dışı bırakmadığınız hesap ve hatırlatma e-postalarını göndermek',
+        'Güvenliği sağlamak ve kötüye kullanımı önlemek',
+        'Uygulamanın nasıl kullanıldığını anlayıp geliştirmek',
+      ],
+      afterBullets: ['Ekibimizin yetkili üyeleri; destek, moderasyon veya güvenlik amacıyla gerektiğinde hesap verilerine (şifreler hariç) erişebilir.'],
     },
     {
       heading: '3. Veri Paylaşımı',
-      paragraphs: ['Kişisel verilerinizi satmayız veya kiralamayız.', 'Verileri yalnızca şu durumlarda paylaşabiliriz:'],
-      bullets: ['Güvenilir hizmet sağlayıcılarla (örn. barındırma hizmetleri)', 'Yasal olarak zorunlu olduğunda'],
+      paragraphs: ['Kişisel verilerinizi satmayız veya kiralamayız.', 'Verileri yalnızca şu durumlarda paylaşırız:'],
+      bullets: [
+        'Uygulamayı çalıştırmak için verileri bizim adımıza işleyen hizmet sağlayıcılarla — barındırma, veritabanı ve e-posta gönderimi',
+        'Yasal olarak zorunlu olduğunda',
+      ],
     },
     {
       heading: '4. Veri Depolama ve Güvenlik',
       paragraphs: [
-        'Verilerinizi korumak için makul teknik önlemler alıyoruz.',
-        'Verileriniz yalnızca hizmeti sağlamak veya yasal yükümlülüklere uymak için gerekli olduğu sürece saklanır.',
+        'Veriler şifreli bağlantılar (HTTPS) üzerinden aktarılır ve güvenli sunucularda saklanır. Şifreler hash\'lenir ve geri döndürülemez.',
+        'Verileriniz yalnızca hizmeti sağlamak veya yasal yükümlülüklere uymak için gerekli olduğu sürece saklanır. Hesabınızı sildiğinizde, hesap verileriniz sunucularımızdan kalıcı olarak kaldırılır.',
       ],
     },
     {
@@ -231,7 +265,7 @@ const PRIVACY_POLICY_TR: LegalDocument = {
     },
     {
       heading: '8. Çocukların Gizliliği',
-      paragraphs: ['Forsvelis, 13 yaşın altındaki kullanıcılar için tasarlanmamıştır. Çocuklardan bilerek veri toplamıyoruz.'],
+      paragraphs: ['Velis, 13 yaşın altındaki kullanıcılar için tasarlanmamıştır. Çocuklardan bilerek veri toplamıyoruz.'],
     },
     {
       heading: '9. Gelecekteki Özellikler',

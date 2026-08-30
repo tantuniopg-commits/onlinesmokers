@@ -53,19 +53,9 @@ export function registerRequest(
   password: string,
   phone?: string,
   stats?: VelisStats,
-  locale?: string,
-  extra?: { gender?: string; birthDate?: string }
+  locale?: string
 ) {
-  return request<AuthApiResult>('POST', '/api/auth/register', {
-    name,
-    email,
-    password,
-    phone,
-    stats,
-    locale,
-    gender: extra?.gender,
-    birthDate: extra?.birthDate,
-  })
+  return request<AuthApiResult>('POST', '/api/auth/register', { name, email, password, phone, stats, locale })
 }
 
 export function loginRequest(email: string, password: string) {
@@ -132,8 +122,6 @@ export type AuthApiStoredUser = {
   name: string
   email: string
   phone?: string | null
-  gender?: string | null
-  birthDate?: string | null
   locale?: string
   isAdmin?: boolean
   stats?: VelisStats
