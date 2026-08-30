@@ -24,7 +24,15 @@ export type AuthApiUserResult = { user: AuthApiUser }
 
 export class AuthApiError extends Error {}
 
+// Backend ücretsiz hosting'de (Render free) 15 dk kullanılmazsa uyuyor;
+// uyandırma isteği ~50 sn sürebiliyor. O yüzden timeout uzun (45 sn) ve
+// zaman aşımı ile ağ hatası ayrı mesajlar veriyor - kullanıcı "sunucu
+// uyanıyor, tekrar dene" görüp butonu yeniden kullanabilsin.
+const REQUEST_TIMEOUT_MS = 45000
+
 async function request<T>(method: string, path: string, body?: unknown, token?: string): Promise<T> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   let res: Response
   try {
     res = await fetch(`${apiBase()}${path}`, {
@@ -34,14 +42,29 @@ async function request<T>(method: string, path: string, body?: unknown, token?: 
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
     })
-  } catch {
-    throw new AuthApiError('Could not reach the server. Check your connection.')
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new AuthApiError('The server is taking too long to respond. It may be waking up — please try again in a moment.')
+    }
+    throw new AuthApiError('Could not reach the server. Check your connection and try again.')
+  } finally {
+    clearTimeout(timer)
   }
 
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new AuthApiError(data.error || 'Something went wrong.')
   return data as T
+}
+
+// Uygulama açılışında (bkz. contexts/AppNavContext) fire-and-forget çağrılıyor -
+// Render'daki backend uyuyorsa kullanıcı giriş ekranına gelene kadar uyanmış
+// olsun diye. Hata umursanmıyor.
+export function warmUpServer(): void {
+  const base = apiBase()
+  if (!base) return
+  fetch(`${base}/health`).catch(() => {})
 }
 
 // Email VE telefon her ikisi de sunucuda benzersiz (bkz. server/src/models/User.js

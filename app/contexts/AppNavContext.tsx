@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import type { TabKey } from '../BottomNav'
 import { getAppState } from '../services/AppStateManager'
 import type { AppLifecycleState } from '../services/AppStateManager'
+import { warmUpServer } from '../lib/authApi'
 
 // Global nav durumu - dört iş görüyor:
 // 1) introActive: '/' rotasındaki splash/logo/aktivasyon akışı oynarken alt
@@ -88,6 +89,9 @@ export function AppNavProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshAppState()
+    // Backend uyuyorsa (Render free) kullanıcı giriş/kayıt ekranına gelene
+    // kadar uyanmış olsun - fire-and-forget (bkz. lib/authApi.warmUpServer).
+    warmUpServer()
   }, [refreshAppState])
 
   // Hydration-safe: sessionStorage sadece mount SONRASI okunuyor (SSR/ilk

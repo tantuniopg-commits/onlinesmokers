@@ -8,16 +8,27 @@ export type SendOtpResult = { expiresAt: number; devCode?: string }
 
 export class OtpApiError extends Error {}
 
+// Backend uyuyabiliyor (Render free) - bkz. lib/authApi.ts aynı gerekçe.
+const OTP_TIMEOUT_MS = 45000
+
 export async function sendOtpRequest(channel: OtpChannel, destination: string, force?: boolean, locale?: string): Promise<SendOtpResult> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), OTP_TIMEOUT_MS)
   let res: Response
   try {
     res = await fetch(`${apiBase()}/api/otp/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ channel, destination, force, locale }),
+      signal: controller.signal,
     })
-  } catch {
-    throw new OtpApiError('Could not reach the server. Check your connection.')
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new OtpApiError('The server is taking too long to respond. Please try again in a moment.')
+    }
+    throw new OtpApiError('Could not reach the server. Check your connection and try again.')
+  } finally {
+    clearTimeout(timer)
   }
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new OtpApiError(data.error || 'Could not send code.')

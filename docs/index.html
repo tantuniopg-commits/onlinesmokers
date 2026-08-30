@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Velis</title>
+<meta name="description" content="Velis — a calm, ritual-based app for taking control of smoking moments." />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #050505;
+    color: #C9C3BA;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .mark {
+    width: 92px; height: 92px; margin-bottom: 30px;
+    border: 1px solid rgba(227,192,140,0.45); border-radius: 24px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .mark::before {
+    content: ""; position: absolute; width: 58px; height: 58px; border-radius: 50%;
+    border: 1.5px solid rgba(243,231,201,0.85);
+  }
+  .mark span {
+    display: block; width: 3.5px; height: 74px; border-radius: 3px;
+    background: linear-gradient(#F6ECD3, #E7A94b);
+    box-shadow: 0 0 16px rgba(240,150,60,0.55); position: relative; z-index: 1;
+  }
+  .mark span::after {
+    content: ""; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
+    border-radius: 50%; background: #F0921F; transform: translate(-50%,-50%);
+    box-shadow: 0 0 12px 3px rgba(240,146,31,0.65);
+  }
+  h1 { letter-spacing: 6px; font-size: 26px; font-weight: 600; color: #E3C08C; }
+  .tagline { margin-top: 14px; max-width: 420px; font-size: 15px; color: #9A948C; }
+  .links { margin-top: 40px; display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .links a { color: #E9E4DC; font-size: 14px; text-decoration: none; border-bottom: 1px solid rgba(227,192,140,0.35); padding-bottom: 2px; }
+  .links a:hover { color: #E3C08C; }
+  footer { margin-top: 56px; font-size: 12px; color: #6f6a63; }
+  footer a { color: #8F8A83; }
+</style>
+</head>
+<body>
+  <div class="mark"><span></span></div>
+  <h1>VELIS</h1>
+  <p class="tagline">A calm, ritual-based app for taking control of smoking moments — and, if you don't smoke, of the urge whenever it appears.</p>
+  <p class="tagline" style="margin-top:8px">Sigara anlarında kontrolü sana geri kazandıran, ritüel temelli sakin bir uygulama.</p>
+
+  <nav class="links">
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="/support.html">Support</a>
+  </nav>
+
+  <footer>
+    © 2026 Velis · <a href="mailto:contact@forsvelis.com">contact@forsvelis.com</a>
+  </footer>
+</body>
+</html>

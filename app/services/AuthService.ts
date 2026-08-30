@@ -174,8 +174,12 @@ export async function changePassword(
 export function logOut(): void {
   clearUser()
   clearToken()
-  // Hesap gitti ama yerel ilerleme (Journey/XP) kalıyor - bu tam olarak
-  // GUEST tanımı (bkz. services/AppStateManager.ts).
+  // Yerel ilerleme de temizleniyor: bu ilerleme çıkış yapılan hesaba ait ve
+  // sunucuda güvende (tekrar giriş yapınca geri geliyor - bkz. handleSignIn
+  // saveStats). Temizlenmezse aynı cihazda açılan İKİNCİ bir hesap önceki
+  // hesabın gün/XP'sini devralıyordu. Misafir-önce-ilk-ritüel akışı bundan
+  // etkilenmiyor (o akışta hiç giriş yapılmadığı için logOut çağrılmıyor).
+  clearStats()
   setAppState('GUEST')
 }
 
