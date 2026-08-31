@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, KeyboardEvent, ReactNode, RefObject } from 'react'
 import VelisMark from '../VelisMark'
-import { getStoredStats, saveStats, getStoredToken } from '../lib/auth'
+import { getStoredStats, saveStats, getStoredToken, ZERO_STATS as ZERO_VELIS_STATS } from '../lib/auth'
 import type { VelisUser, VelisStats } from '../lib/auth'
 import { getStoredSettings } from '../lib/settings'
 import { getStoredUser, validateSignupForm, createAccount, saveToken, getPasswordRuleStatus, isAdminUser } from '../services/AuthService'
@@ -730,9 +730,12 @@ export default function Profile() {
     try {
       const result = await loginRequest(email.trim(), password)
       saveToken(result.token)
-      // Sunucudaki ilerleme bu cihazın yerel durumunun kaynağı oluyor - "kaldığın
-      // yerden devam" tam olarak bunun sayesinde, hangi cihazdan girilirse girilsin.
-      if (result.user.stats) saveStats(result.user.stats)
+      // Sunucudaki ilerleme bu cihazın yerel durumunun TEK kaynağı - "kaldığın
+      // yerden devam" bunun sayesinde, hangi cihazdan girilirse girilsin.
+      // HER ZAMAN sunucudan yazıyoruz (yoksa sıfır): aksi halde aynı cihazda
+      // başka bir hesaba giriş yapınca, o hesabın sunucu ilerlemesi boşsa
+      // önceki hesabın yerel gün/XP'si olduğu gibi kalıyordu.
+      saveStats(result.user.stats ?? ZERO_VELIS_STATS)
       const { firstName: fn, lastName: ln } = splitName(result.user.name)
       finishAuth(createAccount({ firstName: fn, lastName: ln, email: result.user.email, id: result.user.id, isAdmin: result.user.isAdmin }))
     } catch (e) {

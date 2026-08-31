@@ -171,16 +171,34 @@ export async function changePassword(
   }
 }
 
-export function logOut(): void {
+// Cihazı GERÇEKTEN ilk-açılış durumuna döndürür: hesap, token, yerel ilerleme,
+// onboarding/kullanıcı-tipi/guide bayrakları, intro splash bayrağı ve ödül
+// guard'ı - hepsi temizlenir, appState FIRST_LAUNCH olur. Hem çıkış yapma
+// (logOut) hem hesap silme (deleteAccount) bunu kullanıyor.
+//
+// GEREKÇE: Velis kişisel, tek-kullanıcı-tek-cihaz bir yolculuk. "Çıkış yap"
+// dendiğinde (veya telefon başkasına verildiğinde) cihaz temiz başlamalı -
+// bir sonraki kişi/hesap, çıkılan hesabın gün/XP'sini DEVRALMAMALI ve
+// hoş geldin + VELIS Guide turunu SIFIRDAN görmeli. İlerleme kaybolmuyor:
+// çıkılan hesaba tekrar giriş yapılınca sunucudan geri geliyor (bkz.
+// handleSignIn saveStats). Misafir-önce-ilk-ritüel akışı etkilenmiyor -
+// orada hiç giriş yapılmadığı için bu fonksiyon çağrılmıyor.
+function resetDeviceToFirstLaunch(): void {
   clearUser()
   clearToken()
-  // Yerel ilerleme de temizleniyor: bu ilerleme çıkış yapılan hesaba ait ve
-  // sunucuda güvende (tekrar giriş yapınca geri geliyor - bkz. handleSignIn
-  // saveStats). Temizlenmezse aynı cihazda açılan İKİNCİ bir hesap önceki
-  // hesabın gün/XP'sini devralıyordu. Misafir-önce-ilk-ritüel akışı bundan
-  // etkilenmiyor (o akışta hiç giriş yapılmadığı için logOut çağrılmıyor).
   clearStats()
-  setAppState('GUEST')
+  clearWelcomeSeen()
+  clearUserType()
+  clearGuideCompleted()
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.removeItem('velis_intro_played')
+    window.localStorage.removeItem('velis_claimed_rewards')
+  }
+  setAppState('FIRST_LAUNCH')
+}
+
+export function logOut(): void {
+  resetDeviceToFirstLaunch()
 }
 
 // Token varsa hesap sunucudan da GERÇEKTEN siliniyor - aksi halde silinen
@@ -197,21 +215,5 @@ export async function deleteAccount(): Promise<void> {
       console.error('[AuthService] Failed to delete account on server', err)
     }
   }
-  clearUser()
-  clearStats()
-  clearToken()
-  // Ne hesap ne ilerleme kaldı - kullanıcı GERÇEKTEN ilk açılışa dönmeli
-  // (VELIS Guide turu dahil). devJumpToState('FIRST_LAUNCH') ile aynı temizlik:
-  // onboarding/kullanıcı-tipi/guide bayrakları + intro splash bayrağı da
-  // sıfırlanıyor, yoksa /profile'a düşüp turu bir daha görmüyordu.
-  clearWelcomeSeen()
-  clearUserType()
-  clearGuideCompleted()
-  if (typeof window !== 'undefined') {
-    window.sessionStorage.removeItem('velis_intro_played')
-    // Alınan ödül günleri guard'ı (bkz. lib/journey.ts) - yeni bir hesapta
-    // ödüller tekrar alınabilmeli.
-    window.localStorage.removeItem('velis_claimed_rewards')
-  }
-  setAppState('FIRST_LAUNCH')
+  resetDeviceToFirstLaunch()
 }

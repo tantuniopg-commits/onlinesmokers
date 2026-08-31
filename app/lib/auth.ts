@@ -75,7 +75,7 @@ export function clearUser() {
 
 // Hiç ritüel tamamlanmamış haldeki gerçek sıfır durum - Journey Day ancak
 // ilk ritüel tamamlandığında 1'e çıkıyor (bkz. journey.ts).
-const ZERO_STATS: VelisStats = {
+export const ZERO_STATS: VelisStats = {
   journeyDay: 0,
   currentStreak: 0,
   journeyTimestamp: null,

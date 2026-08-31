@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { SettingsShell, SettingsCard, SettingsRow, SANS } from '../shared'
 import type { VelisUser } from '../../../lib/auth'
 import {
@@ -14,7 +13,6 @@ import {
   isPasswordValid,
 } from '../../../services/AuthService'
 import type { PasswordRuleId } from '../../../services/AuthService'
-import { useAppNav } from '../../../contexts/AppNavContext'
 import { useLocale } from '../../../contexts/LocaleContext'
 
 // app/profile/page.tsx'teki PasswordRuleRow ile aynı görsel dil (amber
@@ -147,8 +145,6 @@ function PasswordField({
 type EditMode = 'name' | 'password' | null
 
 export default function AccountSettings() {
-  const router = useRouter()
-  const { refreshAppState } = useAppNav()
   const { t, locale } = useLocale()
   const [user, setUser] = useState<VelisUser | null>(null)
   const [editMode, setEditMode] = useState<EditMode>(null)
@@ -226,19 +222,20 @@ export default function AccountSettings() {
     }, 1400)
   }
 
+  // Çıkış yapma ve hesap silme AYNI davranış: cihaz ilk-açılışa dönüyor
+  // (bkz. AuthService.resetDeviceToFirstLaunch). Sert yenilemeyle '/'ye -
+  // client-side router.push ile gidilirse ağaçta eski React state'i (ve
+  // intro/guide "görüldü" işaretleri) hayatta kalıp hoş geldin + tur tekrar
+  // oynamıyordu.
   const handleLogOut = () => {
     logOutService()
-    refreshAppState()
-    router.push('/profile')
+    if (typeof window !== 'undefined') window.location.href = '/'
   }
 
   const handleDeleteAccount = async () => {
     if (deleting) return
     setDeleting(true)
     await deleteAccountService()
-    // Sert yenilemeyle '/'ye - client-side router.push ile gidilirse ağaçta
-    // eski React state'i (ve intro/guide "görüldü" işaretleri) hayatta kalıp
-    // ilk-açılış turu tekrar oynamıyordu. Bkz. AuthService.deleteAccount.
     if (typeof window !== 'undefined') window.location.href = '/'
   }
 
