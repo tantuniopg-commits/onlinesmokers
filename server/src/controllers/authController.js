@@ -22,6 +22,26 @@ const MAX_NAME = 80
 const MAX_GENDER = 32
 const MAX_BIRTHDATE = 10 // "YYYY-MM-DD"
 
+// --- Stats anti-cheat ---------------------------------------------------
+// Stats KASITLI OLARAK istemcide hesaplanıp senkronlanıyor (mimari bu -
+// ritüel mantığı istemcide). Sunucu ritüeli çalıştırmıyor ama gelen
+// değerlerin MAKUL olup olmadığına bakıyor: "totalXP = 1 milyar" gibi kaba
+// leaderboard hilelerini kesiyor. Gerçekçi hızda sahte ilerleme dripleyen
+// sofistike birini durdurmaz - amaç, tek bir POST'la leaderboard'u ele
+// geçirmeyi imkansızlaştırmak.
+const STATS_CEIL = {
+  journeyDay: 100000,
+  currentStreak: 100000,
+  totalXP: 100000000,
+  totalRitualCount: 500000,
+  totalRitualTimeSec: 1000000000,
+}
+// Bir ritüel: XP_PER_RITUAL (10) + amber top bonusu (en fazla ~600) - 1000
+// çok cömert bir üst sınır. Ödül günü tek seferlik +500 XP ekliyor, ritüel
+// sayısını artırmıyor; taban pay onu da kapsıyor.
+const MAX_XP_PER_RITUAL = 1000
+const XP_BASE_ALLOWANCE = 1000
+
 // Hesap oluşturma formuyla BİREBİR aynı kural seti (bkz.
 // app/services/AuthService.ts isPasswordValid/getPasswordRuleStatus) -
 // istemci tarafındaki kontrol sadece UX, gerçek/kesin doğrulama burada.
@@ -65,12 +85,25 @@ function pickStats(input) {
       else if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) stats[key] = raw
       continue
     }
-    // Diğer tüm sayaçlar: sonlu, negatif olmayan sayı
+    // Diğer tüm sayaçlar: sonlu, negatif olmayan sayı - mutlak tavana kırpılıyor
     if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) {
-      stats[key] = Math.min(raw, Number.MAX_SAFE_INTEGER)
+      stats[key] = Math.min(Math.floor(raw), STATS_CEIL[key] ?? Number.MAX_SAFE_INTEGER)
     }
   }
   return Object.keys(stats).length ? stats : undefined
+}
+
+// register'da hesap tohumu: misafir kayıttan önce EN FAZLA 1 ritüel
+// yapabiliyor (bkz. BottomNav gating) - o yüzden yeni bir hesap 1 ritüellik
+// ilerlemeden fazlasıyla açılamaz. Sessizce kırpıyoruz (kaydı reddetmiyoruz).
+function clampSeedStats(stats) {
+  if (!stats) return undefined
+  const cap = { journeyDay: 1, currentStreak: 1, totalXP: 1000, totalRitualCount: 1, totalRitualTimeSec: 300 }
+  const out = { ...stats }
+  for (const k of Object.keys(cap)) {
+    if (typeof out[k] === 'number') out[k] = Math.min(out[k], cap[k])
+  }
+  return out
 }
 
 async function register(req, res) {
@@ -127,7 +160,7 @@ async function register(req, res) {
     gender: gender || undefined,
     birthDate: birthDate || undefined,
     passwordHash,
-    stats: pickStats(body.stats),
+    stats: clampSeedStats(pickStats(body.stats)),
     locale: resolvedLocale,
   })
 
@@ -168,12 +201,72 @@ async function me(req, res) {
 // Bir cihazdaki ritüel tamamlanınca (bkz. lib/journey.ts completeRitual)
 // en güncel ilerlemeyi sunucuya yazıyor - başka bir cihaz/tarayıcıdan
 // giriş yapıldığında "kaldığı yerden devam" bunun sayesinde çalışıyor.
+//
+// Anti-cheat (bkz. STATS_CEIL yorumu): birikimli sayaçlar azalamaz, mutlak
+// tavanı aşamaz, XP artışı ritüel sayısı artışıyla tutarlı olmalı. Makul
+// güncellemeler (çevrimdışı kalıp toplu senkronlayan biri dahil - pay
+// ritüel sayısıyla ölçekleniyor) geçer; kaba hileler reddedilir.
 async function updateStats(req, res) {
-  const stats = pickStats(req.body?.stats)
-  if (!stats) return res.status(400).json({ error: 'stats is required' })
+  const incoming = pickStats(req.body?.stats)
+  if (!incoming) return res.status(400).json({ error: 'stats is required' })
 
-  const user = await User.findByIdAndUpdate(req.userId, { $set: { stats } }, { new: true })
+  const user = await User.findById(req.userId)
   if (!user) return res.status(404).json({ error: 'User not found' })
+  const cur = user.stats || {}
+  const n = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
+
+  const oldXP = n(cur.totalXP)
+  const oldRituals = n(cur.totalRitualCount)
+  const oldTime = n(cur.totalRitualTimeSec)
+  const oldDay = n(cur.journeyDay)
+
+  const next = {
+    journeyDay: 'journeyDay' in incoming ? incoming.journeyDay : oldDay,
+    currentStreak: 'currentStreak' in incoming ? incoming.currentStreak : n(cur.currentStreak),
+    journeyTimestamp: 'journeyTimestamp' in incoming ? incoming.journeyTimestamp : (cur.journeyTimestamp ?? null),
+    totalXP: 'totalXP' in incoming ? incoming.totalXP : oldXP,
+    totalRitualCount: 'totalRitualCount' in incoming ? incoming.totalRitualCount : oldRituals,
+    totalRitualTimeSec: 'totalRitualTimeSec' in incoming ? incoming.totalRitualTimeSec : oldTime,
+  }
+
+  // 1) Birikimli sayaçlar ASLA azalmaz (currentStreak hariç - kaçırılan
+  //    günde 0/1'e düşebilir). Eski/sıra dışı gelen bir senkron da buraya
+  //    takılır, ki bu doğru davranış (yeniyi eskiyle ezme).
+  if (
+    next.totalXP < oldXP ||
+    next.totalRitualCount < oldRituals ||
+    next.totalRitualTimeSec < oldTime ||
+    next.journeyDay < oldDay
+  ) {
+    return res.status(409).json({ error: 'Stats cannot go backwards', user: toPublicUser(user) })
+  }
+
+  // 2) XP artışı, tamamlanan ritüel sayısıyla tutarlı olmalı.
+  const dRituals = next.totalRitualCount - oldRituals
+  const dXP = next.totalXP - oldXP
+  if (dXP > dRituals * MAX_XP_PER_RITUAL + XP_BASE_ALLOWANCE) {
+    return res.status(400).json({ error: 'Invalid stats update' })
+  }
+
+  // 3) Süre artışı da ritüel sayısıyla tutarlı (ritüel ~30sn, tavan 300).
+  const dTime = next.totalRitualTimeSec - oldTime
+  if (dTime > dRituals * 300 + 60) {
+    return res.status(400).json({ error: 'Invalid stats update' })
+  }
+
+  // 4) journeyDay bir ritüelde en fazla 1 ilerler - dRituals kadar (çevrimdışı
+  //    toplu senkron payı) + küçük bir tolerans.
+  if (next.journeyDay - oldDay > dRituals + 1) {
+    return res.status(400).json({ error: 'Invalid stats update' })
+  }
+
+  // pickStats zaten mutlak tavana kırptı; yine de emniyet için kontrol.
+  for (const [k, ceil] of Object.entries(STATS_CEIL)) {
+    if (n(next[k]) > ceil) return res.status(400).json({ error: 'Invalid stats update' })
+  }
+
+  user.stats = next
+  await user.save()
   res.json({ user: toPublicUser(user) })
 }
 
