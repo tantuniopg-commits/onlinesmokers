@@ -5,6 +5,23 @@ const { isAdminEmail } = require('../lib/admins')
 
 const STATS_FIELDS = ['journeyDay', 'currentStreak', 'journeyTimestamp', 'totalXP', 'totalRitualCount', 'totalRitualTimeSec']
 
+// Gövdeden gelen HER alan önce string'e zorlanıp trim'leniyor - bir saldırgan
+// `{"$gt":""}` gibi bir nesne gönderse bile Mongo sorgusuna operatör olarak
+// değil, düz (anlamsız) bir string olarak giriyor (express-mongo-sanitize
+// zaten `$`/`.` anahtarlarını da temizliyor - bu ikinci savunma katmanı).
+function str(v) {
+  return typeof v === 'string' ? v.trim() : ''
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+function isValidEmail(email) {
+  return typeof email === 'string' && email.length <= 254 && EMAIL_RE.test(email)
+}
+// Sunucu tarafı uzunluk tavanları - şema seviyesinde de olsa buradan net
+// hata dönmek daha iyi.
+const MAX_NAME = 80
+const MAX_GENDER = 32
+const MAX_BIRTHDATE = 10 // "YYYY-MM-DD"
+
 // Hesap oluşturma formuyla BİREBİR aynı kural seti (bkz.
 // app/services/AuthService.ts isPasswordValid/getPasswordRuleStatus) -
 // istemci tarafındaki kontrol sadece UX, gerçek/kesin doğrulama burada.
@@ -37,28 +54,63 @@ function toPublicUser(user) {
 }
 
 function pickStats(input) {
-  if (!input || typeof input !== 'object') return undefined
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return undefined
   const stats = {}
   for (const key of STATS_FIELDS) {
-    if (key in input) stats[key] = input[key]
+    if (!(key in input)) continue
+    const raw = input[key]
+    if (key === 'journeyTimestamp') {
+      // null ("hiç ritüel yapılmadı") VEYA pozitif bir epoch ms
+      if (raw === null) stats[key] = null
+      else if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) stats[key] = raw
+      continue
+    }
+    // Diğer tüm sayaçlar: sonlu, negatif olmayan sayı
+    if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) {
+      stats[key] = Math.min(raw, Number.MAX_SAFE_INTEGER)
+    }
   }
-  return stats
+  return Object.keys(stats).length ? stats : undefined
 }
 
 async function register(req, res) {
-  const { name, email, password, phone, stats, locale, gender, birthDate } = req.body || {}
+  const body = req.body || {}
+  const name = str(body.name).slice(0, MAX_NAME)
+  const email = str(body.email).toLowerCase()
+  const password = typeof body.password === 'string' ? body.password : ''
+  const phone = str(body.phone)
+  const gender = str(body.gender).slice(0, MAX_GENDER)
+  const birthDate = str(body.birthDate).slice(0, MAX_BIRTHDATE)
+
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email and password are required' })
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'A valid email address is required' })
+  }
+  // İstemci formuyla + şifre sıfırlamayla BİREBİR aynı kural seti - istemci
+  // kontrolü sadece UX, kesin doğrulama burada.
+  if (!isPasswordValid(password)) {
+    return res.status(400).json({
+      error: 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a special character',
+    })
+  }
+  // birthDate verildiyse geçerli bir geçmiş tarih + 13+ olmalı (COPPA /
+  // Gizlilik Politikası). İstemci de kontrol ediyor ama kesin sınır burada.
+  if (birthDate) {
+    const dob = new Date(birthDate)
+    const thirteenAgo = new Date()
+    thirteenAgo.setFullYear(thirteenAgo.getFullYear() - 13)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || Number.isNaN(dob.getTime()) || dob > thirteenAgo) {
+      return res.status(400).json({ error: 'You must be at least 13 years old to create an account' })
+    }
   }
 
   // Email ve telefon HER İKİSİ de benzersiz - bir hesap silinmeden aynı
   // email veya aynı telefonla ikinci bir hesap açılamıyor (bkz. User.js
   // şemasındaki unique index'ler - buradaki kontrol daha net bir hata
   // mesajı dönmek için, gerçek garanti veritabanı seviyesinde).
-  const existingEmail = await User.findOne({ email: email.toLowerCase() })
+  const existingEmail = await User.findOne({ email })
   if (existingEmail) return res.status(409).json({ error: 'Email already in use' })
 
   if (phone) {
@@ -66,16 +118,16 @@ async function register(req, res) {
     if (existingPhone) return res.status(409).json({ error: 'Phone number already in use' })
   }
 
-  const resolvedLocale = locale === 'tr' ? 'tr' : 'en'
+  const resolvedLocale = body.locale === 'tr' ? 'tr' : 'en'
   const passwordHash = await User.hashPassword(password)
   const user = await User.create({
     name,
     email,
     phone: phone || undefined,
-    gender: typeof gender === 'string' && gender.trim() ? gender.trim() : undefined,
-    birthDate: typeof birthDate === 'string' && birthDate.trim() ? birthDate.trim() : undefined,
+    gender: gender || undefined,
+    birthDate: birthDate || undefined,
     passwordHash,
-    stats: pickStats(stats),
+    stats: pickStats(body.stats),
     locale: resolvedLocale,
   })
 
@@ -90,13 +142,18 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const { email, password } = req.body || {}
+  const body = req.body || {}
+  const email = str(body.email).toLowerCase()
+  const password = typeof body.password === 'string' ? body.password : ''
   if (!email || !password) {
     return res.status(400).json({ error: 'email and password are required' })
   }
 
-  const user = await User.findOne({ email: email.toLowerCase() })
+  const user = await User.findOne({ email })
   const valid = user && (await user.comparePassword(password))
+  // Aynı jenerik mesaj + (kullanıcı yoksa bile) sahte bir bcrypt karşılaştırma
+  // yapılmadığı için minik bir zamanlama farkı kalıyor - kabul edilebilir;
+  // asıl brute-force koruması rate limit (bkz. index.js authLimiter).
   if (!valid) return res.status(401).json({ error: 'Invalid email or password' })
 
   res.json({ token: signToken(user._id), user: toPublicUser(user) })
@@ -122,7 +179,7 @@ async function updateStats(req, res) {
 
 // Hesap Ayarları > İsmi Düzenle (bkz. app/profile/settings/account/page.tsx).
 async function updateProfile(req, res) {
-  const name = String(req.body?.name || '').trim()
+  const name = str(req.body?.name).slice(0, MAX_NAME)
   if (!name) return res.status(400).json({ error: 'name is required' })
   const user = await User.findByIdAndUpdate(req.userId, { $set: { name } }, { new: true })
   if (!user) return res.status(404).json({ error: 'User not found' })

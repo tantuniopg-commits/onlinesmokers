@@ -319,6 +319,18 @@ async function sendRewardCountdownEmail(to, locale, daysLeft, rewardDay) {
   await sendEmail(to, copy.subject(daysLeft), html, text)
 }
 
+// Kullanıcı adı e-posta HTML'ine girdiği için HTML-escape şart - aksi halde
+// `<img onerror=...>` gibi bir isimle kayıt olan biri kendi gelen kutusuna
+// (ve admin panelinin herhangi bir ham render'ına) script kaçırabilir.
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // Kayıt tamamlanır tamamlanmaz (bkz. authController.js register) gönderilen
 // hoş geldin maili - başlıkta kullanıcının adı geçtiği için (talep gereği)
 // diğerleri gibi sabit bir tablo değil, isimle inşa edilen bir fonksiyon.
@@ -345,7 +357,11 @@ const WELCOME_COPY = {
 
 async function sendWelcomeEmail(to, name, locale) {
   const build = WELCOME_COPY[locale] || WELCOME_COPY.en
-  await sendResolvedCopyEmail(to, build(name))
+  // subject düz metin (escape gereksiz, hatta &amp; gibi görünür), lines HTML.
+  const safeName = escapeHtml(name)
+  const copy = build(name)
+  const safeCopy = build(safeName)
+  await sendResolvedCopyEmail(to, { subject: copy.subject, lines: safeCopy.lines })
 }
 
 module.exports = {
