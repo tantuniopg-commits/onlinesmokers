@@ -15,6 +15,13 @@ import { useAppNav } from './contexts/AppNavContext'
 import { useLocale } from './contexts/LocaleContext'
 import { completeRitual } from './lib/journey'
 import { getStoredStats } from './lib/auth'
+import { playSound, startAmbient, stopAmbient } from './lib/sound'
+import {
+  loadRitualSession,
+  saveRitualSession,
+  patchRitualSession,
+  clearRitualSession,
+} from './lib/ritualSession'
 import {
   hasSeenWelcome,
   markWelcomeSeen,
@@ -37,35 +44,6 @@ import { setAppState } from './services/AppStateManager'
 // yansıyor.
 
 type Phase = 'idle' | 'activating' | 'ready' | 'ritual' | 'complete'
-
-// Yumuşak, tek seferlik "aktivasyon" tonu - harici ses dosyası yok,
-// Web Audio ile sentezleniyor. Önceki lighter/inhale seslerindeki
-// yönteme benzer, çok daha yumuşak/kısa.
-function playSoftActivationTone() {
-  try {
-    const AudioContextClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    const ctx = new AudioContextClass()
-    const duration = 0.5
-    const osc = ctx.createOscillator()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(420, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(560, ctx.currentTime + duration * 0.6)
-
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + duration * 0.25)
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
-
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.start()
-    osc.stop(ctx.currentTime + duration)
-  } catch {
-    // Web Audio desteklenmiyorsa sessizce geç
-  }
-}
 
 function triggerHaptic() {
   if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -216,6 +194,11 @@ function Landing() {
   const { setRitualLockActive, introActive } = useAppNav()
   const { t, locale } = useLocale()
   const [mounted, setMounted] = useState(false)
+  // Mount'taki "yarım kalmış ritüeli geri yükle" effect'i çalışıp fazı
+  // kararlaştırana kadar false - o ana kadar <main> boş (düz siyah) kalıyor,
+  // idle ekranın bir frame boyunca boyanıp ritual'e geçişte kırpışmasını
+  // önlüyor (bkz. aşağıdaki geri-yükle effect'i).
+  const [booted, setBooted] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
   // Sunucu/istemcinin ilk render'ında AYNI deterministik varsayılanla
   // başlıyor (bkz. lib/ritualConfig.ts) - Developer Panel'in geçersiz
@@ -248,6 +231,10 @@ function Landing() {
   // (bkz. dosya başındaki secondsLeft/ritualConfig deseni).
   const isFirstEverRitualRef = useRef(false)
   const [showRitualGuide, setShowRitualGuide] = useState(false)
+  // idle'daki RITUAL adımı, satırları biten rehber figürünü FAZ DEĞİŞMEDEN
+  // kaldırabilsin diye ayrı bayrak - showRitualGuide, ilk ritüel SIRASINDAki
+  // ORB_XP adımı için hâlâ true kalmalı, o yüzden onu kapatamıyoruz.
+  const [idleGuideDone, setIdleGuideDone] = useState(false)
   const objectRef = useRef<HTMLDivElement>(null)
   // Rehber hem idle'da (RITUAL adımı) hem de ilk ritüel SIRASINDA (ORB_XP adımı -
   // "toplara dokun, ekstra XP") objeyi spotlight'lıyor.
@@ -298,14 +285,23 @@ function Landing() {
 
   useEffect(() => {
     if (phase === 'ritual') {
-      orbXPRef.current = 0
+      // Başka sekmeden geri dönülüp ritüel geri yüklendiyse o ana kadar
+      // toplanmış bonus XP korunuyor; taze başlangıçta oturum orbXP:0 ile
+      // yazıldığı için yine 0 (bkz. handleStartRitual, ritualSession.ts).
+      const session = loadRitualSession()
+      orbXPRef.current = session?.phase === 'ritual' ? session.orbXP : 0
       comboStepRef.current = 5
       lastOrbTapRef.current = null
-      spawnOrb()
+      // Süre ekran dışındayken dolduysa top yaratma - completion effect'i
+      // hemen devralıp ritüeli tamamlayacak.
+      if (secondsLeft > 0) spawnOrb()
     } else {
       setOrb(null)
       setOrbPopups([])
       if (orbTimerRef.current) clearTimeout(orbTimerRef.current)
+      // 'complete' zaten yumuşak fade ile durdurdu - burası idle'a/başka
+      // faza atlanan diğer tüm yolları güvenceye alıyor (no-op'sa zararsız).
+      if (phase !== 'complete') stopAmbient()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
@@ -313,6 +309,7 @@ function Landing() {
   const handleOrbTap = () => {
     if (!orb || orb.fading) return
     triggerHaptic()
+    playSound('orb')
     const now = Date.now()
     const withinCombo = lastOrbTapRef.current !== null && now - lastOrbTapRef.current <= 3000
     // 30'a ulaşınca (üst sınır) bir sonraki dokunuşta süre içinde olsa bile
@@ -321,6 +318,9 @@ function Landing() {
     const award = comboStepRef.current
     lastOrbTapRef.current = now
     orbXPRef.current += award
+    // Her dokunuşta kalıcılaştır - ritüel ortasında sekme değişse bile
+    // toplanan bonus XP geri dönüşte korunuyor.
+    patchRitualSession({ orbXP: orbXPRef.current })
 
     const id = ++popupIdRef.current
     const { x, y } = orb
@@ -364,6 +364,120 @@ function Landing() {
     activeDurationRef.current = configured
     setSecondsLeft(configured)
   }, [])
+
+  // ---- YARIM KALMIŞ RİTÜELİ GERİ YÜKLE ----
+  // Ritüel sırasında başka sekmeye geçip dönünce ('/' unmount oluyordu),
+  // React state'i sıfırdan başlıyordu. Oturum (bkz. lib/ritualSession.ts)
+  // varsa aktivasyon/hazır/ritüel fazına DUVAR SAATİNE göre geri dönüyoruz -
+  // ekran dışında geçen süre de sayılıyor. Sadece mount'ta bir kez.
+  //
+  // `booted`: bu effect çalışıp faz kararlaştırılana kadar <main> boş
+  // (düz siyah) render ediliyor - aksi halde ilk frame'de idle ekran
+  // boyanıp, hemen ardından ritual'e geçiş CSS transition'larını tetikliyor
+  // ve "önce eski ekran, sonra doğru ekran" gibi buglu bir kırpışma oluyordu.
+  // Siyah, <main>'in kendi arka planıyla aynı - kullanıcı tek frame'lik
+  // boşluğu görmüyor, sonra `mounted` her zamanki 700ms fade'i yapıyor.
+  useEffect(() => {
+    const s = loadRitualSession()
+    const now = Date.now()
+
+    if (s?.phase === 'activating') {
+      const remainingMs = ACTIVATING_MS - (now - s.phaseStartedAt)
+      activeDurationRef.current = s.durationSec
+      setSecondsLeft(s.durationSec)
+      if (remainingMs <= 0) {
+        patchRitualSession({ phase: 'ready', phaseStartedAt: now })
+        setPhase('ready')
+      } else {
+        setPhase('activating')
+        activatingTimerRef.current = setTimeout(() => {
+          triggerHaptic()
+          playSound('ready')
+          patchRitualSession({ phase: 'ready', phaseStartedAt: Date.now() })
+          setPhase('ready')
+        }, remainingMs)
+      }
+    } else if (s?.phase === 'ready') {
+      activeDurationRef.current = s.durationSec
+      setSecondsLeft(s.durationSec)
+      setPhase('ready')
+    } else if (s?.phase === 'ritual') {
+      const elapsedSec = Math.floor((now - s.phaseStartedAt) / 1000)
+      const remaining = s.durationSec - elapsedSec
+      activeDurationRef.current = s.durationSec
+      orbXPRef.current = s.orbXP
+      if (remaining <= 0) {
+        // Süre ekran dışındayken doldu - phase+secondsLeft:0 ile completion
+        // effect'ini tetikliyoruz (ritüeli tam olarak bir kez tamamlıyor).
+        setSecondsLeft(0)
+      } else {
+        setSecondsLeft(remaining)
+        startAmbient()
+      }
+      setPhase('ritual')
+    }
+
+    setBooted(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ---- GERİ SAYIM ---- phase 'ritual' olduğu sürece saniye başı azalıyor.
+  // Effect'e taşındı ki hem handleStartRitual hem de geri yüklenen ritüel
+  // aynı yolu kullansın. secondsLeft'i bağımlılığa KOYMUYORUZ - her tik'te
+  // interval'ı yeniden kurardı; fonksiyonel güncelleme yeterli.
+  useEffect(() => {
+    if (phase !== 'ritual' || secondsLeft <= 0) return
+    countdownRef.current = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          if (countdownRef.current) {
+            clearInterval(countdownRef.current)
+            countdownRef.current = null
+          }
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current)
+        countdownRef.current = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
+
+  // ---- RİTÜEL DİSİPLİNİ ---- Ritüel BOYUNCA uygulamada kalınmalı. Uygulama
+  // arka plana atılır / telefon kilitlenir / başka uygulamaya geçilirse
+  // (visibilitychange -> hidden) o anki ritüel İPTAL olur: yapılmış
+  // sayılmaz, geri dönünce kaldığı yerden DEVAM ETMEZ, sıfırdan başlar.
+  //
+  // Uygulama İÇİ gezinme (Profile sekmesi vb.) sayfa görünür kaldığı için
+  // visibilitychange tetiklemez - orada oturum korunur, ritüel devam eder
+  // (bkz. yukarıdaki geri-yükle effect'i). Hesaptan çıkış zaten oturumu
+  // ayrıca siliyor (bkz. AuthService.resetDeviceToFirstLaunch).
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'hidden') return
+      if (phase !== 'activating' && phase !== 'ready' && phase !== 'ritual') return
+      clearRitualSession()
+      stopAmbient()
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current)
+        countdownRef.current = null
+      }
+      if (activatingTimerRef.current) clearTimeout(activatingTimerRef.current)
+      orbXPRef.current = 0
+      setOrb(null)
+      setOrbPopups([])
+      setIsHoldingRitual(false)
+      setSecondsLeft(getRitualDurationSec())
+      setPhase('idle')
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [phase])
 
   // İlk kullanıcının İLK ritüeli - Ritual Home'a daha ilk vardığı andan
   // (idle) "Ritual complete." ekranına kadar alt navigasyonu tamamen
@@ -410,6 +524,7 @@ function Landing() {
     return () => {
       clearAllTimers()
       if (countdownRef.current) clearInterval(countdownRef.current)
+      stopAmbient()
     }
   }, [])
 
@@ -424,6 +539,7 @@ function Landing() {
       countdownRef.current = null
     }
     setIsHoldingRitual(false)
+    clearRitualSession()
     const beforeTimestamp = getStoredStats().journeyTimestamp
     isFirstRitualRef.current = beforeTimestamp === null
     setOrbBonusXP(orbXPRef.current)
@@ -433,6 +549,8 @@ function Landing() {
     dayAdvancedRef.current = after.journeyTimestamp !== beforeTimestamp
     if (isFirstRitualRef.current) setAppState('FIRST_RITUAL_COMPLETED')
     triggerHaptic()
+    stopAmbient()
+    playSound('complete')
     setPhase('complete')
   }, [phase, secondsLeft])
 
@@ -458,12 +576,20 @@ function Landing() {
   const handleTap = () => {
     if (phase !== 'idle') return
     triggerHaptic()
-    playSoftActivationTone()
+    playSound('activate')
+    saveRitualSession({
+      phase: 'activating',
+      phaseStartedAt: Date.now(),
+      durationSec: getRitualDurationSec(),
+      orbXP: 0,
+    })
     setPhase('activating')
 
     activatingTimerRef.current = setTimeout(() => {
       // ---- 3. AKTİVASYON TAMAMLANDI - onay bekleniyor ----
       triggerHaptic()
+      playSound('ready')
+      patchRitualSession({ phase: 'ready', phaseStartedAt: Date.now() })
       setPhase('ready')
     }, ACTIVATING_MS)
   }
@@ -474,25 +600,20 @@ function Landing() {
   const handleStartRitual = () => {
     if (phase !== 'ready') return
     triggerHaptic()
-    setPhase('ritual')
+    playSound('ritualStart')
+    startAmbient()
     // Her ritüel başlangıcında TAZE bir değer okunuyor - Developer Panel'de
     // yapılan bir değişiklik yeniden başlatma/yenileme olmadan bir sonraki
     // ritüele hemen yansıyor (bkz. lib/ritualConfig.ts).
     const duration = getRitualDurationSec()
     activeDurationRef.current = duration
     setSecondsLeft(duration)
-    countdownRef.current = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          if (countdownRef.current) {
-            clearInterval(countdownRef.current)
-            countdownRef.current = null
-          }
-          return 0
-        }
-        return s - 1
-      })
-    }, 1000)
+    // Oturumu setPhase'den ÖNCE yaz - phase → 'ritual' effect'i orbXP'yi
+    // buradan okuyor, taze başlangıçta 0 görmeli. Geri sayım artık bir
+    // effect'te (bkz. aşağıdaki countdown effect) - buradan imperatif
+    // setInterval kaldırıldı ki geri yüklenen ritüelde de aynı yol çalışsın.
+    saveRitualSession({ phase: 'ritual', phaseStartedAt: Date.now(), durationSec: duration, orbXP: 0 })
+    setPhase('ritual')
   }
 
   // ---- RİTÜEL SIRASINDA objeyi basılı tutma: timer'ı ASLA etkilemez,
@@ -519,6 +640,13 @@ function Landing() {
       return
     }
     router.push(dayAdvancedRef.current ? '/aftercare' : '/aftercare?earlyRepeat=1')
+  }
+
+  // Geri-yükle effect'i fazı kararlaştırana kadar düz siyah - Suspense
+  // fallback'iyle ve <main>'in arka planıyla birebir aynı, o yüzden görünmez
+  // bir frame. Ardından normal render + `mounted` fade'i devreye giriyor.
+  if (!booted) {
+    return <main style={{ height: '100dvh', background: '#050505' }} />
   }
 
   return (
@@ -922,11 +1050,12 @@ function Landing() {
         </div>
       </div>
 
-      {!introActive && showRitualGuide && phase === 'idle' && (
+      {!introActive && showRitualGuide && !idleGuideDone && phase === 'idle' && (
         <GuideOverlay
           targetRect={objectRect}
           lines={getGuideScript(locale).RITUAL}
           guidePlacement="bottom"
+          onDialogueDone={() => setIdleGuideDone(true)}
           onSkip={() => {
             setGuideCompleted()
             setShowRitualGuide(false)

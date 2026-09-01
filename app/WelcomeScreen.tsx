@@ -11,8 +11,8 @@ import { useLocale } from './contexts/LocaleContext'
 // First-launch-only ekran - IntroSplash bittikten hemen sonra, ilk
 // ritüelden ÖNCE. Kendi metni ve butonu yok artık - TEK içerik VELIS Guide
 // (bkz. guide/guideScript.ts WELCOME_LINES, Smoker/Nonsmoker'a göre farklı).
-// Guide konuşmasını bitirince KENDİLİĞİNDEN devam etmiyor - kullanıcının
-// ekrana dokunmasını bekliyor (bkz. readyToContinue).
+// Guide son satırına dokunulunca (bu zaten "anladım" dokunuşu) KENDİLİĞİNDEN
+// devam ediyor - ayrıca bir "boşa dokunuş" beklemiyor.
 
 const EXIT_MS = 400
 
@@ -22,7 +22,6 @@ export default function WelcomeScreen({ onContinue, userType }: { onContinue: ()
   // VELIS Guide - sadece gerçek ilk kullanıcıda, "tamamlandı" bayrağı
   // set edilene (Skip veya son adım) kadar hiç kaybolmuyor.
   const [showGuide, setShowGuide] = useState(false)
-  const [readyToContinue, setReadyToContinue] = useState(false)
 
   useEffect(() => {
     if (isGuideCompleted()) {
@@ -42,13 +41,11 @@ export default function WelcomeScreen({ onContinue, userType }: { onContinue: ()
 
   return (
     <div
-      onClick={() => readyToContinue && handleContinue()}
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 40,
         background: '#050505',
-        cursor: readyToContinue ? 'pointer' : 'default',
         opacity: exiting ? 0 : 1,
         transition: `opacity ${EXIT_MS}ms ease-in-out`,
       }}
@@ -76,7 +73,7 @@ export default function WelcomeScreen({ onContinue, userType }: { onContinue: ()
           guidePlacement="center"
           guideSize={70}
           lines={getWelcomeLines(userType, locale)}
-          onDialogueDone={() => setReadyToContinue(true)}
+          onDialogueDone={() => handleContinue()}
           onSkip={() => {
             setGuideCompleted()
             handleContinue()

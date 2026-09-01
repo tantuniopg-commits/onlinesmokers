@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { getStoredSettings, saveSettings } from '../services/SettingsService'
-import type { UserSettings, NotificationSettings, AppearanceSettings } from '../services/SettingsService'
+import type { UserSettings, NotificationSettings, AppearanceSettings, SoundPalette } from '../services/SettingsService'
 import { getStoredToken } from '../lib/auth'
 import { updatePreferencesRequest } from '../lib/authApi'
 
@@ -43,6 +43,15 @@ export function useSettings() {
     })
   }, [])
 
+  const updateSound = useCallback((palette: SoundPalette) => {
+    setSettings((prev) => {
+      const current = prev ?? getStoredSettings()
+      const next = { ...current, sound: { ...current.sound, palette } }
+      saveSettings(next)
+      return next
+    })
+  }, [])
+
   const updateAppearance = useCallback((appearance: AppearanceSettings) => {
     setSettings((prev) => {
       const current = prev ?? getStoredSettings()
@@ -52,5 +61,5 @@ export function useSettings() {
     })
   }, [])
 
-  return { settings, updateLanguage, updateNotifications, updateAppearance }
+  return { settings, updateLanguage, updateNotifications, updateSound, updateAppearance }
 }

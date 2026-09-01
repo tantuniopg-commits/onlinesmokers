@@ -9,7 +9,12 @@ import GuideDialogue from './GuideDialogue'
 const APPEAR_MS = 900
 const GUIDE_W = 50
 const SIDE_GAP = 20
-const SETTLE_MS = 500
+// Son satıra dokunulduktan sonra TÜM katman (rehber + kart + loşluk) birlikte
+// hızlıca sönüyor ve hemen unmount oluyor - eskiden rehber figürü %70
+// opaklıkta yarım saniye asılı kalıyordu, "iş bitti ama gitmedi" hissi
+// veriyordu. Fade süresi + küçük bir tampon kadar.
+const FADE_OUT_MS = 200
+const SETTLE_MS = 240
 
 // Rehber SADECE turdaki İLK kez yavaşça beliriyor - sonraki her adımda
 // (ekran/step değişse bile) doğrudan tam görünür başlıyor, "sabit kalıyor"
@@ -27,10 +32,10 @@ let guideEverAppeared = false
 // target, e.g. Welcome); the default keeps it in a fixed, safe bottom zone.
 // The spotlight layer is pointer-events:none - the real, live element
 // underneath stays fully interactive through the dim. Once the message is
-// fully acknowledged (last line tapped), the dim/spotlight lifts, the card
-// fades out, and the guide settles to ~70% opacity - focus returns to
-// whatever it was explaining (usually the Amber Core object) - before the
-// parent's onDialogueDone actually fires.
+// fully acknowledged (last line tapped), the WHOLE layer - guide, card and
+// dim together - fades out fast (FADE_OUT_MS) and the parent's onDialogueDone
+// fires right after (SETTLE_MS), unmounting it. No lingering half-opacity
+// figure: when the guide is done talking, it's gone.
 export default function GuideOverlay({
   targetRect,
   lines,
@@ -79,8 +84,10 @@ export default function GuideOverlay({
         inset: 0,
         zIndex: 900,
         pointerEvents: 'none',
-        opacity: appeared ? 1 : 0,
-        transition: `opacity ${APPEAR_MS}ms ease-in-out`,
+        opacity: settled ? 0 : appeared ? 1 : 0,
+        transition: settled
+          ? `opacity ${FADE_OUT_MS}ms ease-in`
+          : `opacity ${APPEAR_MS}ms ease-in-out`,
       }}
     >
       {targetRect ? (
@@ -148,7 +155,7 @@ export default function GuideOverlay({
               transition: 'top 250ms ease-out, left 250ms ease-out',
             }}
           >
-            <VelisGuide pointing={pointing} speaking={speaking} opacity={settled ? 0.7 : 1} size={guideSize ?? GUIDE_W} />
+            <VelisGuide pointing={pointing} speaking={speaking} opacity={1} size={guideSize ?? GUIDE_W} />
           </div>
           {/* Mesaj kartı objenin SAĞINDA - objeyi asla örtmüyor. */}
           <div
@@ -197,7 +204,7 @@ export default function GuideOverlay({
         >
           {/* Rehber solda, mesaj kartı yanında (kafanın sağ-üstünde) - rehber
               kartın DÜŞEY merkeziyle hizalı. */}
-          <VelisGuide pointing={pointing} reaching speaking={speaking} opacity={settled ? 0.7 : 1} size={guideSize} />
+          <VelisGuide pointing={pointing} reaching speaking={speaking} opacity={1} size={guideSize} />
           <div
             style={{
               opacity: settled ? 0 : 1,

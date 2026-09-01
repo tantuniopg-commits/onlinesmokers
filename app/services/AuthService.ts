@@ -8,7 +8,7 @@ import { clearStats, clearToken, getStoredToken } from '../lib/auth'
 import type { VelisUser } from '../lib/auth'
 import { userRepository } from '../repositories'
 import { setAppState } from './AppStateManager'
-import { clearWelcomeSeen, clearUserType } from '../lib/onboarding'
+import { clearWelcomeSeen, clearUserType, clearLanguageSelected } from '../lib/onboarding'
 import { clearGuideCompleted } from '../lib/guide'
 import { updateProfileRequest, changePasswordRequest, deleteAccountRequest } from '../lib/authApi'
 
@@ -172,14 +172,14 @@ export async function changePassword(
 }
 
 // Cihazı GERÇEKTEN ilk-açılış durumuna döndürür: hesap, token, yerel ilerleme,
-// onboarding/kullanıcı-tipi/guide bayrakları, intro splash bayrağı ve ödül
-// guard'ı - hepsi temizlenir, appState FIRST_LAUNCH olur. Hem çıkış yapma
-// (logOut) hem hesap silme (deleteAccount) bunu kullanıyor.
+// dil-seçildi/onboarding/kullanıcı-tipi/guide bayrakları, intro splash bayrağı
+// ve ödül guard'ı - hepsi temizlenir, appState FIRST_LAUNCH olur. Hem çıkış
+// yapma (logOut) hem hesap silme (deleteAccount) bunu kullanıyor.
 //
 // GEREKÇE: Velis kişisel, tek-kullanıcı-tek-cihaz bir yolculuk. "Çıkış yap"
 // dendiğinde (veya telefon başkasına verildiğinde) cihaz temiz başlamalı -
-// bir sonraki kişi/hesap, çıkılan hesabın gün/XP'sini DEVRALMAMALI ve
-// hoş geldin + VELIS Guide turunu SIFIRDAN görmeli. İlerleme kaybolmuyor:
+// bir sonraki kişi/hesap, çıkılan hesabın gün/XP'sini DEVRALMAMALI ve dil
+// seçimi + hoş geldin + VELIS Guide turunu SIFIRDAN görmeli. İlerleme kaybolmuyor:
 // çıkılan hesaba tekrar giriş yapılınca sunucudan geri geliyor (bkz.
 // handleSignIn saveStats). Misafir-önce-ilk-ritüel akışı etkilenmiyor -
 // orada hiç giriş yapılmadığı için bu fonksiyon çağrılmıyor.
@@ -188,10 +188,12 @@ function resetDeviceToFirstLaunch(): void {
   clearToken()
   clearStats()
   clearWelcomeSeen()
+  clearLanguageSelected()
   clearUserType()
   clearGuideCompleted()
   if (typeof window !== 'undefined') {
     window.sessionStorage.removeItem('velis_intro_played')
+    window.sessionStorage.removeItem('velis_ritual_session')
     window.localStorage.removeItem('velis_claimed_rewards')
   }
   setAppState('FIRST_LAUNCH')

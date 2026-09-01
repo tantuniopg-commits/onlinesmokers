@@ -6,6 +6,7 @@ import VelisMark from '../VelisMark'
 import RewardBadge from '../RewardBadge'
 import { getStoredStats } from '../lib/auth'
 import { claimRewardXP, isRewardClaimed, REWARD_XP } from '../lib/journey'
+import { playSound } from '../lib/sound'
 import { FONT_SANS } from '../lib/typography'
 import { useLocale } from '../contexts/LocaleContext'
 
@@ -50,6 +51,7 @@ function RewardContent() {
   const handleClaim = () => {
     if (!claimable) return
     claimRewardXP(day)
+    playSound('reward')
     setClaimed(true) // navigasyon yok - kullanıcı önce +500 XP açılışını görsün
   }
 

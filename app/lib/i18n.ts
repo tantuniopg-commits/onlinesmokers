@@ -93,6 +93,7 @@ export const translations = {
     'settings.item.account': 'Account',
     'settings.item.language': 'Language',
     'settings.item.notifications': 'Notifications',
+    'settings.item.sound': 'Sound',
     'settings.item.privacy': 'Privacy & Security',
     'settings.item.about': 'About',
 
@@ -102,6 +103,16 @@ export const translations = {
     'settings.notifications.title': 'Notifications',
     'settings.notifications.dailyRitualReminder': 'Daily Ritual Reminder',
 
+    'settings.sound.title': 'Sound',
+    'settings.sound.note': 'Every sound is generated live inside the app. Choose the texture that fits your ritual.',
+    'settings.sound.ceramic': 'Ceramic',
+    'settings.sound.ceramic.desc': 'Warm, struck-clay tones. Grounded and tactile.',
+    'settings.sound.bowl': 'Singing Bowl',
+    'settings.sound.bowl.desc': 'Long, resonant shimmer. Meditative and open.',
+    'settings.sound.breath': 'Breath',
+    'settings.sound.breath.desc': 'Almost toneless air and breath. Minimal.',
+    'settings.sound.off': 'Silent',
+    'settings.sound.off.desc': 'No sound during the ritual.',
 
 
     'settings.about.title': 'About',
@@ -294,6 +305,7 @@ export const translations = {
     'settings.item.account': 'Hesap',
     'settings.item.language': 'Dil',
     'settings.item.notifications': 'Bildirimler',
+    'settings.item.sound': 'Ses',
     'settings.item.privacy': 'Gizlilik ve Güvenlik',
     'settings.item.about': 'Hakkında',
 
@@ -303,6 +315,16 @@ export const translations = {
     'settings.notifications.title': 'Bildirimler',
     'settings.notifications.dailyRitualReminder': 'Günlük Ritüel Hatırlatması',
 
+    'settings.sound.title': 'Ses',
+    'settings.sound.note': 'Tüm sesler uygulama içinde canlı üretiliyor. Ritüeline yakışan dokuyu seç.',
+    'settings.sound.ceramic': 'Seramik',
+    'settings.sound.ceramic.desc': 'Sıcak, kile vurulmuş tonlar. Sakin ve dokunsal.',
+    'settings.sound.bowl': 'Tibet Çanağı',
+    'settings.sound.bowl.desc': 'Uzun, yankılı bir titreşim. Meditatif ve ferah.',
+    'settings.sound.breath': 'Nefes',
+    'settings.sound.breath.desc': 'Neredeyse tonsuz hava ve nefes. Minimal.',
+    'settings.sound.off': 'Sessiz',
+    'settings.sound.off.desc': 'Ritüel sırasında ses yok.',
 
 
     'settings.about.title': 'Hakkında',

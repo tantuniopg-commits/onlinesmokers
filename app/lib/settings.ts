@@ -12,6 +12,18 @@ export type NotificationSettings = {
   dailyRitualReminder: boolean
 }
 
+// Ritüel sesleri harici dosya DEĞİL - hepsi Web Audio ile gerçek zamanlı
+// sentezleniyor (bkz. lib/sound.ts). Her palet uygulamanın ruhunu farklı
+// taşıyor; 'off' tamamen sessiz.
+//   ceramic - sıcak, seramik/kil tokmak vuruşu (varsayılan)
+//   bowl    - Tibet çanağı: uzun, meditatif titreşim
+//   breath  - neredeyse tonsuz, hava/nefes dokusu; minimal
+export type SoundPalette = 'ceramic' | 'bowl' | 'breath' | 'off'
+
+export type SoundSettings = {
+  palette: SoundPalette
+}
+
 export type AppearanceSettings = {
   // Şu an tek desteklenen değer `true` - Light Mode gelince burası gerçek
   // bir seçim haline gelecek, ThemeProvider bu alanı okuyacak.
@@ -22,6 +34,7 @@ export type UserSettings = {
   language: string // bkz. lib/locales.ts SUPPORTED_LOCALES[].code
   notifications: NotificationSettings
   appearance: AppearanceSettings
+  sound: SoundSettings
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -31,6 +44,9 @@ const DEFAULT_SETTINGS: UserSettings = {
   },
   appearance: {
     darkMode: true,
+  },
+  sound: {
+    palette: 'ceramic',
   },
 }
 
@@ -47,6 +63,7 @@ export function getStoredSettings(): UserSettings {
       ...parsed,
       notifications: { ...DEFAULT_SETTINGS.notifications, ...parsed.notifications },
       appearance: { ...DEFAULT_SETTINGS.appearance, ...parsed.appearance },
+      sound: { ...DEFAULT_SETTINGS.sound, ...parsed.sound },
     }
   } catch {
     return DEFAULT_SETTINGS
