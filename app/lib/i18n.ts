@@ -24,6 +24,9 @@ export const translations = {
     'common.saving': 'Saving…',
     'common.back': 'Back',
 
+    'connection.line': 'VELIS needs an internet connection to continue.',
+    'connection.retry': 'Try again',
+
     'ritual.title': 'The ritual.',
     'ritual.subtitle': 'Without the cigarette.',
     'ritual.ready.subtitle': 'Everything is ready.',
@@ -235,6 +238,9 @@ export const translations = {
     'common.save': 'Kaydet',
     'common.saving': 'Kaydediliyor…',
     'common.back': 'Geri',
+
+    'connection.line': 'VELIS devam etmek için internet bağlantısı gerektiriyor.',
+    'connection.retry': 'Tekrar dene',
 
     'ritual.title': 'Ritüel.',
     'ritual.subtitle': 'Sigara olmadan.',
