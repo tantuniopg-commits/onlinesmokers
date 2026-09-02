@@ -3,12 +3,18 @@
 // privacy/page.tsx). EN/TR ayrı kaynak metinler - getTermsOfService/
 // getPrivacyPolicy o anki locale'e göre doğru olanı döndürüyor.
 //
-// Gizlilik Politikası 2026-08-30'da baştan yazıldı - uygulamanın GERÇEKTEN
-// topladığı her veri türünü (ad, e-posta, cinsiyet, doğum tarihi, hash'li
-// şifre, uygulama içi ilerleme/XP/streak, dil+bildirim tercihleri, hesap
-// meta verisi) listeliyor; KVKK/GDPR dayanakları, uluslararası aktarım,
-// saklama, haklar, hesap silme ve 13+ kuralı dahil. İki dil BİREBİR aynı
-// yapı - biri değişirse diğeri de değişmeli.
+// Gizlilik Politikası 2026-08-30'da baştan yazıldı, 2026-09-02'de gözden
+// geçirildi - uygulamanın GERÇEKTEN topladığı her veri türünü (ad, e-posta,
+// cinsiyet, doğum tarihi, hash'li şifre, uygulama içi ilerleme/XP/streak,
+// dil+bildirim tercihleri, hesap meta verisi) listeliyor; KVKK/GDPR
+// dayanakları, uluslararası aktarım, saklama, haklar, hesap silme ve 13+
+// kuralı dahil. Telefon/SMS artık toplanmıyor (telefonlu kayıt kaldırıldı).
+//
+// Terms of Service 2026-09-02'de genişletildi - TIBBİ SORUMLULUK REDDİ
+// (Velis tıbbi cihaz/tavsiye değil), yaş şartı, hizmet tanımı, ödeme
+// (ücretsiz, IAP yok), görünen ad kuralı eklendi.
+//
+// İki dil BİREBİR aynı yapı - biri değişirse diğeri de değişmeli.
 
 export type LegalSection = {
   heading: string
@@ -26,107 +32,208 @@ export type LegalDocument = {
 
 const TERMS_OF_SERVICE_EN: LegalDocument = {
   title: 'Terms of Service',
-  lastUpdated: 'Last Updated: August 30, 2026',
-  intro: ['By using Velis, you agree to these Terms of Service.'],
+  lastUpdated: 'Last Updated: September 2, 2026',
+  intro: [
+    'These Terms of Service ("Terms") are an agreement between you and the developer of Velis ("Velis", "we", "us"). By downloading, accessing, or using the Velis app, you agree to these Terms. If you do not agree, do not use the app.',
+  ],
   sections: [
     {
-      heading: '1. Use of the App',
-      paragraphs: ['You agree to use Velis only for lawful purposes and in a way that does not harm the app or other users.'],
+      heading: '1. About These Terms',
+      paragraphs: [
+        'Velis is operated by an independent developer based in Türkiye. You can reach us at contact@forsvelis.com.',
+        'These Terms cover your use of the app. Our Privacy Policy explains how we handle your data and is part of your agreement with us.',
+      ],
     },
     {
-      heading: '2. Accounts',
-      paragraphs: ['You are responsible for maintaining the confidentiality of your account and for all activities under your account.'],
+      heading: '2. What Velis Is — and Is Not',
+      paragraphs: [
+        'Velis is a calm, ritual-based app for the moment a craving appears. It gives you a short, deliberate practice to run, tracks your progress over time, and lets you compare streaks and XP with other users.',
+        'Velis is not a medical device and does not provide medical advice, diagnosis, or treatment. It is not a smoking-cessation program and is not a substitute for professional help, a doctor, a therapist, or a quitline. Nothing in the app is medical or health advice. If you want to stop smoking or have any concerns about your health, talk to a qualified healthcare professional. Never disregard or delay professional advice because of something in Velis. Your use of the app is your own choice and responsibility.',
+      ],
     },
     {
-      heading: '3. Acceptable Use',
+      heading: '3. Eligibility',
+      paragraphs: [
+        'You must be at least 13 years old to use Velis. By using the app you confirm that you meet this requirement. We ask for your date of birth at sign-up and do not allow accounts for anyone under 13.',
+      ],
+    },
+    {
+      heading: '4. Your Account',
+      paragraphs: [
+        'You can use the core features of Velis without an account. If you create one, you agree to provide accurate information, to keep your password confidential, and to be responsible for everything that happens under your account. One account per person. Tell us at contact@forsvelis.com if you believe your account has been accessed without your permission.',
+        'You can delete your account at any time from Profile → Settings → Account → Delete Account.',
+      ],
+    },
+    {
+      heading: '5. Acceptable Use',
       paragraphs: ['You agree not to:'],
-      bullets: ['Use the app for illegal activities', 'Attempt to disrupt or damage the app', 'Violate the rights of others'],
+      bullets: [
+        'Use the app for any unlawful purpose or in violation of these Terms',
+        'Attempt to disrupt, overload, reverse-engineer, or gain unauthorized access to the app or its servers',
+        "Interfere with or manipulate progress data, the leaderboard, or other users' experience",
+        'Violate the rights of Velis or of any other person',
+      ],
     },
     {
-      heading: '4. Intellectual Property',
-      paragraphs: ['All content and features of Velis belong to us. You may not copy or distribute them without permission.'],
+      heading: '6. Display Names and the Leaderboard',
+      paragraphs: [
+        'The leaderboard shows your name and your stats (streak and XP) to other users; your email is never shown. Choose a name that is not offensive, misleading, or impersonating someone else. We may change or remove a name, or remove an account from the leaderboard, if it breaks this rule.',
+      ],
     },
     {
-      heading: '5. Termination',
-      paragraphs: ['We may suspend or terminate your access if you violate these terms.'],
+      heading: '7. Payments',
+      paragraphs: [
+        'Velis is currently free to use. There are no in-app purchases and no subscriptions. If this changes in the future, we will update these Terms and make any paid features clear before you buy.',
+      ],
     },
     {
-      heading: '6. Disclaimer',
-      paragraphs: ['Velis is provided "as is" without warranties of any kind.'],
+      heading: '8. Intellectual Property',
+      paragraphs: [
+        'The Velis app — its name, design, text, graphics, and sounds — is owned by us or our licensors and is protected by law. We grant you a personal, non-exclusive, non-transferable, revocable licence to use the app for your own personal, non-commercial use. You may not copy, modify, distribute, sell, or create derivative works from any part of the app without our permission.',
+      ],
     },
     {
-      heading: '7. Limitation of Liability',
-      paragraphs: ['We are not responsible for damages resulting from the use of the app.'],
+      heading: '9. Disclaimer of Warranties',
+      paragraphs: [
+        'The app is provided "as is" and "as available", without warranties of any kind, express or implied, including fitness for a particular purpose, accuracy, or uninterrupted or error-free operation. Velis relies on an internet connection and third-party services and may be unavailable at times.',
+      ],
     },
     {
-      heading: '8. Changes',
-      paragraphs: ['We may update these Terms at any time. Continued use means acceptance.'],
+      heading: '10. Limitation of Liability',
+      paragraphs: [
+        'To the fullest extent permitted by law, Velis and its developer will not be liable for any indirect, incidental, special, or consequential damages, or for any loss of data, arising from your use of or inability to use the app. Nothing in these Terms limits liability that cannot be limited under applicable law.',
+      ],
     },
     {
-      heading: '9. Governing Law',
-      paragraphs: ['These Terms are governed by the laws of Türkiye.'],
+      heading: '11. Termination',
+      paragraphs: [
+        'You can stop using Velis and delete your account at any time. We may suspend or end your access if you break these Terms or if we stop offering the app. Sections that by their nature should survive termination (such as intellectual property, disclaimers, and limitation of liability) will continue to apply.',
+      ],
     },
     {
-      heading: '10. Contact',
-      paragraphs: ['Email: contact@forsvelis.com'],
+      heading: '12. Changes to These Terms',
+      paragraphs: [
+        'We may update these Terms from time to time. If we make material changes we will update the "Last Updated" date and, where appropriate, notify you in the app. Continuing to use Velis after an update means you accept the revised Terms.',
+      ],
+    },
+    {
+      heading: '13. Governing Law',
+      paragraphs: [
+        'These Terms are governed by the laws of the Republic of Türkiye, without regard to conflict-of-law rules. Mandatory consumer-protection rights you have in your country of residence are not affected.',
+      ],
+    },
+    {
+      heading: '14. Contact',
+      paragraphs: ['Questions about these Terms: contact@forsvelis.com'],
     },
   ],
 }
 
 const TERMS_OF_SERVICE_TR: LegalDocument = {
   title: 'Kullanım Koşulları',
-  lastUpdated: 'Son Güncelleme: 30 Ağustos 2026',
-  intro: ["Velis'i kullanarak bu Kullanım Koşullarını kabul etmiş olursunuz."],
+  lastUpdated: 'Son Güncelleme: 2 Eylül 2026',
+  intro: [
+    'Bu Kullanım Koşulları ("Koşullar"), sizinle Velis geliştiricisi ("Velis", "biz", "bize") arasında bir sözleşmedir. Velis uygulamasını indirerek, erişerek veya kullanarak bu Koşulları kabul etmiş olursunuz. Kabul etmiyorsanız uygulamayı kullanmayın.',
+  ],
   sections: [
     {
-      heading: '1. Uygulamanın Kullanımı',
-      paragraphs: ["Velis'i yalnızca yasal amaçlarla ve uygulamaya veya diğer kullanıcılara zarar vermeyecek şekilde kullanmayı kabul edersiniz."],
+      heading: '1. Bu Koşullar Hakkında',
+      paragraphs: [
+        'Velis, Türkiye merkezli bağımsız bir geliştirici tarafından işletilmektedir. Bize contact@forsvelis.com adresinden ulaşabilirsiniz.',
+        'Bu Koşullar uygulamayı kullanımınızı kapsar. Gizlilik Politikamız verilerinizi nasıl ele aldığımızı açıklar ve bizimle olan sözleşmenizin bir parçasıdır.',
+      ],
     },
     {
-      heading: '2. Hesaplar',
-      paragraphs: ['Hesabınızın gizliliğini korumaktan ve hesabınız altında gerçekleşen tüm faaliyetlerden siz sorumlusunuz.'],
+      heading: '2. Velis Nedir — ve Ne Değildir',
+      paragraphs: [
+        'Velis, bir isteğin/dürtünün belirdiği an için tasarlanmış, ritüel temelli sakin bir uygulamadır. Uygulayabileceğiniz kısa ve bilinçli bir pratik sunar, zamanla ilerlemenizi takip eder ve seri ile XP’nizi diğer kullanıcılarla karşılaştırmanıza olanak tanır.',
+        'Velis bir tıbbi cihaz değildir; tıbbi tavsiye, teşhis veya tedavi sağlamaz. Bir sigara bırakma programı değildir ve profesyonel yardımın, bir doktorun, bir terapistin veya bir bırakma danışma hattının yerini tutmaz. Uygulamadaki hiçbir şey tıbbi veya sağlıkla ilgili tavsiye değildir. Sigarayı bırakmak istiyorsanız veya sağlığınızla ilgili herhangi bir endişeniz varsa nitelikli bir sağlık uzmanına başvurun. Velis’teki herhangi bir şey nedeniyle profesyonel tavsiyeyi asla göz ardı etmeyin veya ertelemeyin. Uygulamayı kullanmak sizin kendi seçiminiz ve sorumluluğunuzdadır.',
+      ],
     },
     {
-      heading: '3. Kabul Edilebilir Kullanım',
+      heading: '3. Uygunluk',
+      paragraphs: [
+        'Velis’i kullanmak için en az 13 yaşında olmalısınız. Uygulamayı kullanarak bu şartı karşıladığınızı onaylarsınız. Kayıt sırasında doğum tarihinizi sorarız ve 13 yaşın altındaki hiç kimse için hesap açılmasına izin vermeyiz.',
+      ],
+    },
+    {
+      heading: '4. Hesabınız',
+      paragraphs: [
+        'Velis’in çekirdek özelliklerini hesap olmadan kullanabilirsiniz. Hesap oluşturursanız; doğru bilgi vermeyi, şifrenizi gizli tutmayı ve hesabınız altında olan her şeyden sorumlu olmayı kabul edersiniz. Kişi başına bir hesap. Hesabınıza izniniz olmadan erişildiğini düşünüyorsanız contact@forsvelis.com adresinden bize bildirin.',
+        'Hesabınızı istediğiniz zaman Profil → Ayarlar → Hesap → Hesabı Sil yolundan silebilirsiniz.',
+      ],
+    },
+    {
+      heading: '5. Kabul Edilebilir Kullanım',
       paragraphs: ['Aşağıdakileri yapmamayı kabul edersiniz:'],
-      bullets: ['Uygulamayı yasa dışı faaliyetler için kullanmak', 'Uygulamayı bozmaya veya zarar vermeye çalışmak', 'Başkalarının haklarını ihlal etmek'],
+      bullets: [
+        'Uygulamayı herhangi bir yasa dışı amaçla veya bu Koşulları ihlal edecek şekilde kullanmak',
+        'Uygulamayı ya da sunucularını bozmaya, aşırı yüklemeye, tersine mühendisliğe tabi tutmaya veya yetkisiz erişim sağlamaya çalışmak',
+        'İlerleme verilerine, liderlik tablosuna ya da diğer kullanıcıların deneyimine müdahale etmek veya bunları manipüle etmek',
+        'Velis’in veya başka bir kişinin haklarını ihlal etmek',
+      ],
     },
     {
-      heading: '4. Fikri Mülkiyet',
-      paragraphs: ["Velis'in tüm içeriği ve özellikleri bize aittir. İzin almadan bunları kopyalayamaz veya dağıtamazsınız."],
+      heading: '6. Görünen Adlar ve Liderlik Tablosu',
+      paragraphs: [
+        'Liderlik tablosu adınızı ve istatistiklerinizi (seri ve XP) diğer kullanıcılara gösterir; e-posta adresiniz asla gösterilmez. Hakaret içermeyen, yanıltıcı olmayan ve başkasını taklit etmeyen bir ad seçin. Bu kurala aykırı bir adı değiştirebilir veya kaldırabilir ya da bir hesabı liderlik tablosundan çıkarabiliriz.',
+      ],
     },
     {
-      heading: '5. Fesih',
-      paragraphs: ['Bu koşulları ihlal etmeniz durumunda erişiminizi askıya alabilir veya sonlandırabiliriz.'],
+      heading: '7. Ödemeler',
+      paragraphs: [
+        'Velis şu anda ücretsizdir. Uygulama içi satın alma ve abonelik yoktur. İleride bu değişirse bu Koşulları güncelleriz ve satın almadan önce ücretli özellikleri açıkça belirtiriz.',
+      ],
     },
     {
-      heading: '6. Sorumluluk Reddi',
-      paragraphs: ['Velis, herhangi bir garanti verilmeksizin "olduğu gibi" sunulmaktadır.'],
+      heading: '8. Fikri Mülkiyet',
+      paragraphs: [
+        'Velis uygulaması — adı, tasarımı, metinleri, grafikleri ve sesleri — bize veya lisans verenlerimize aittir ve yasalarla korunur. Uygulamayı yalnızca kişisel, ticari olmayan kullanımınız için kullanmanıza yönelik kişisel, münhasır olmayan, devredilemez ve geri alınabilir bir lisans veririz. İznimiz olmadan uygulamanın hiçbir bölümünü kopyalayamaz, değiştiremez, dağıtamaz, satamaz veya bundan türev çalışmalar oluşturamazsınız.',
+      ],
     },
     {
-      heading: '7. Sorumluluğun Sınırlandırılması',
-      paragraphs: ['Uygulamanın kullanımından kaynaklanan zararlardan sorumlu değiliz.'],
+      heading: '9. Garanti Reddi',
+      paragraphs: [
+        'Uygulama, açık veya zımni hiçbir garanti verilmeksizin "olduğu gibi" ve "mevcut olduğu şekilde" sunulur; belirli bir amaca uygunluk, doğruluk veya kesintisiz ya da hatasız çalışma garantileri dahil. Velis bir internet bağlantısına ve üçüncü taraf hizmetlerine bağlıdır ve zaman zaman kullanılamayabilir.',
+      ],
     },
     {
-      heading: '8. Değişiklikler',
-      paragraphs: ['Bu Koşulları herhangi bir zamanda güncelleyebiliriz. Kullanmaya devam etmeniz kabul ettiğiniz anlamına gelir.'],
+      heading: '10. Sorumluluğun Sınırlandırılması',
+      paragraphs: [
+        'Yasaların izin verdiği azami ölçüde, Velis ve geliştiricisi; uygulamayı kullanmanızdan veya kullanamamanızdan doğan hiçbir dolaylı, arızi, özel ya da sonuçsal zarardan veya herhangi bir veri kaybından sorumlu olmayacaktır. Bu Koşullardaki hiçbir hüküm, ilgili mevzuata göre sınırlandırılamayacak sorumluluğu sınırlandırmaz.',
+      ],
     },
     {
-      heading: '9. Uygulanacak Hukuk',
-      paragraphs: ['Bu Koşullar Türkiye kanunlarına tabidir.'],
+      heading: '11. Fesih',
+      paragraphs: [
+        'Velis’i kullanmayı istediğiniz zaman bırakabilir ve hesabınızı silebilirsiniz. Bu Koşulları ihlal etmeniz veya uygulamayı sunmayı bırakmamız durumunda erişiminizi askıya alabilir ya da sonlandırabiliriz. Niteliği gereği fesihten sonra da geçerli kalması gereken bölümler (fikri mülkiyet, garanti reddi ve sorumluluğun sınırlandırılması gibi) uygulanmaya devam eder.',
+      ],
     },
     {
-      heading: '10. İletişim',
-      paragraphs: ['E-posta: contact@forsvelis.com'],
+      heading: '12. Bu Koşullardaki Değişiklikler',
+      paragraphs: [
+        'Bu Koşulları zaman zaman güncelleyebiliriz. Esaslı değişiklikler yaparsak "Son Güncelleme" tarihini günceller ve uygun olduğunda sizi uygulama içinde bilgilendiririz. Bir güncellemeden sonra Velis’i kullanmaya devam etmeniz, revize edilmiş Koşulları kabul ettiğiniz anlamına gelir.',
+      ],
+    },
+    {
+      heading: '13. Uygulanacak Hukuk',
+      paragraphs: [
+        'Bu Koşullar, kanunlar ihtilafı kurallarına bakılmaksızın Türkiye Cumhuriyeti kanunlarına tabidir. İkamet ettiğiniz ülkede sahip olduğunuz zorunlu tüketici hakları bundan etkilenmez.',
+      ],
+    },
+    {
+      heading: '14. İletişim',
+      paragraphs: ['Bu Koşullarla ilgili sorular: contact@forsvelis.com'],
     },
   ],
 }
 
 const PRIVACY_POLICY_EN: LegalDocument = {
   title: 'Privacy Policy',
-  lastUpdated: 'Last Updated: August 30, 2026',
+  lastUpdated: 'Last Updated: September 2, 2026',
   intro: [
     'Velis ("Velis", "we", "our", or "us") respects your privacy. This Privacy Policy explains what information we collect when you use the Velis mobile application, why we collect it, how it is stored and shared, and the choices and rights you have.',
+    'Velis is operated by an independent developer based in Türkiye. For data-protection purposes, that developer is the data controller for your personal data and can be reached at contact@forsvelis.com.',
     'By creating an account or using Velis, you agree to this Privacy Policy. If you do not agree, please do not use the app.',
   ],
   sections: [
@@ -156,7 +263,7 @@ const PRIVACY_POLICY_EN: LegalDocument = {
         'Show the leaderboard, which ranks registered users by streak and XP (your name and stats are visible to other users there; your email is never shown)',
         'Send you account-related emails (verification codes, password resets) and the ritual reminder emails you have not turned off',
         'Keep the service secure, prevent abuse, and troubleshoot problems',
-        'Understand, in aggregate, how the app is used so we can improve it',
+        'Maintain basic server logs (such as error and request logs) needed to operate, protect, and improve the service',
       ],
       afterBullets: [
         'We do not use your data for advertising, and we do not sell it.',
@@ -173,7 +280,7 @@ const PRIVACY_POLICY_EN: LegalDocument = {
       heading: '4. Sharing and Disclosure',
       paragraphs: ['We do not sell or rent your personal data. We share it only in these cases:'],
       bullets: [
-        'Service providers who process data on our behalf to run Velis: application hosting, database hosting, transactional email delivery, and (if you verify a phone number) SMS delivery. These providers may only use the data to provide their service to us.',
+        'Service providers who process data on our behalf to run Velis: application hosting, database hosting, and transactional email delivery. These providers may only use the data to provide their service to us.',
         'Legal requirements: if we are required to disclose data by law, legal process, or a valid governmental request, or to protect the rights, safety, or property of Velis, our users, or the public.',
         'Business transfer: if Velis is involved in a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction; we will notify you if this materially changes how your data is handled.',
       ],
@@ -245,9 +352,10 @@ const PRIVACY_POLICY_EN: LegalDocument = {
 
 const PRIVACY_POLICY_TR: LegalDocument = {
   title: 'Gizlilik Politikası',
-  lastUpdated: 'Son Güncelleme: 30 Ağustos 2026',
+  lastUpdated: 'Son Güncelleme: 2 Eylül 2026',
   intro: [
     'Velis ("Velis", "biz", "bizim" veya "bize") gizliliğinize saygı duyar. Bu Gizlilik Politikası; Velis mobil uygulamasını kullandığınızda hangi bilgileri topladığımızı, neden topladığımızı, verilerinizin nasıl saklanıp paylaşıldığını ve sahip olduğunuz seçim ve hakları açıklar.',
+    'Velis, Türkiye merkezli bağımsız bir geliştirici tarafından işletilmektedir. Veri koruma açısından bu geliştirici, kişisel verilerinizin veri sorumlusudur ve contact@forsvelis.com adresinden kendisine ulaşılabilir.',
     'Hesap oluşturarak veya Velis\'i kullanarak bu Gizlilik Politikasını kabul etmiş olursunuz. Kabul etmiyorsanız lütfen uygulamayı kullanmayın.',
   ],
   sections: [
@@ -277,7 +385,7 @@ const PRIVACY_POLICY_TR: LegalDocument = {
         'Kayıtlı kullanıcıları seri ve XP\'ye göre sıralayan liderlik tablosunu göstermek (adınız ve istatistikleriniz orada diğer kullanıcılara görünür; e-posta adresiniz asla gösterilmez)',
         'Hesapla ilgili e-postaları (doğrulama kodları, şifre sıfırlama) ve kapatmadığınız ritüel hatırlatma e-postalarını göndermek',
         'Hizmeti güvende tutmak, kötüye kullanımı önlemek ve sorunları gidermek',
-        'Uygulamanın nasıl kullanıldığını genel/toplu olarak anlayıp geliştirmek',
+        'Hizmeti işletmek, korumak ve geliştirmek için gereken temel sunucu günlüklerini (hata ve istek günlükleri gibi) tutmak',
       ],
       afterBullets: [
         'Verilerinizi reklam amacıyla kullanmayız ve satmayız.',
@@ -294,7 +402,7 @@ const PRIVACY_POLICY_TR: LegalDocument = {
       heading: '4. Paylaşım ve Açıklama',
       paragraphs: ['Kişisel verilerinizi satmaz veya kiralamayız. Verilerinizi yalnızca şu durumlarda paylaşırız:'],
       bullets: [
-        'Velis\'i çalıştırmak için verileri bizim adımıza işleyen hizmet sağlayıcılar: uygulama barındırma, veritabanı barındırma, işlemsel e-posta gönderimi ve (telefon numarası doğrularsanız) SMS gönderimi. Bu sağlayıcılar verileri yalnızca bize hizmet sunmak için kullanabilir.',
+        'Velis\'i çalıştırmak için verileri bizim adımıza işleyen hizmet sağlayıcılar: uygulama barındırma, veritabanı barındırma ve işlemsel e-posta gönderimi. Bu sağlayıcılar verileri yalnızca bize hizmet sunmak için kullanabilir.',
         'Yasal gereklilikler: yasa, hukuki süreç veya geçerli bir resmi talep gereği veya Velis\'in, kullanıcılarının ya da kamunun haklarını, güvenliğini veya mülkiyetini korumak için veri açıklamamız gerekirse.',
         'İşletme devri: Velis bir birleşme, satın alma veya varlık satışına dahil olursa verileriniz bu işlemin parçası olarak devredilebilir; verilerinizin işlenme şeklini esaslı biçimde değiştirirse sizi bilgilendiririz.',
       ],
