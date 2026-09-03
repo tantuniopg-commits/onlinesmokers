@@ -362,12 +362,25 @@ async function checkPhone(req, res) {
   res.json({ available: !existing })
 }
 
+// "Ada Soyada" -> "Ad S." - Leaderboard herkese açık ve başka kullanıcıların
+// TAM adını göstermek gereksiz bir kişisel veri ifşası. Kısaltılmış ad
+// sunucudan çıkıyor, tam ad başkalarının cihazına hiç ulaşmıyor.
+function displayNameForLeaderboard(full) {
+  const parts = String(full || '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return 'Velis user'
+  if (parts.length === 1) return parts[0]
+  const lastInitial = parts[parts.length - 1][0].toUpperCase()
+  return `${parts[0]} ${lastInitial}.`
+}
+
 // Herkese açık - Leaderboard sadece gerçekten kayıt olmuş kullanıcılardan
-// oluşuyor (bkz. app/leaderboard/page.tsx). Şifre/email dönmüyor, sadece
-// sıralama için gereken alanlar.
+// oluşuyor (bkz. app/leaderboard/page.tsx). Şifre/email/TAM ad dönmüyor -
+// sadece kısaltılmış görünen ad + sıralama için gereken istatistikler.
 async function leaderboard(req, res) {
   const users = await User.find({}, 'name stats').lean()
-  res.json({ users: users.map((u) => ({ id: u._id, name: u.name, stats: u.stats })) })
+  res.json({
+    users: users.map((u) => ({ id: u._id, name: displayNameForLeaderboard(u.name), stats: u.stats })),
+  })
 }
 
 // SADECE admin panelindeki "kayıtlı hesaplar" görünümü için (bkz.
